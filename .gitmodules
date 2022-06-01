@@ -1,0 +1,9 @@
+[submodule "server/lib/libasyncd"]
+	path = server/lib/libasyncd
+	url = https://github.com/wolkykim/libasyncd.git
+[submodule "server/lib/json"]
+	path = server/lib/json
+	url = https://github.com/nlohmann/json.git
+[submodule "server/lib/loguru"]
+	path = server/lib/loguru
+	url = https://github.com/emilk/loguru.git

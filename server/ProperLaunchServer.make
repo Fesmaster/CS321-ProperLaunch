@@ -24,11 +24,11 @@ TARGET = $(TARGETDIR)/ProperLaunchServer
 PCH = include/pch.hpp
 PCH_PLACEHOLDER = $(OBJDIR)/$(notdir $(PCH))
 GCH = $(PCH_PLACEHOLDER).gch
-INCLUDES += -Iinclude -I.
+INCLUDES += -I. -Iinclude -Ilib/libasyncd/include -Ilib/libasyncd/lib/qlibc/include -Ilib/json/single_include -Ilib/loguru
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-LIBS +=
+LIBS += -lasyncd -lqlibc -lpthread -levent -levent_pthreads -levent_openssl -lssl -lcrypto -ldl -lm
 LDDEPS +=
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
@@ -43,14 +43,14 @@ OBJDIR = obj/Debug
 DEFINES += -DDEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g
-ALL_LDFLAGS += $(LDFLAGS)
+ALL_LDFLAGS += $(LDFLAGS) -Llib/libasyncd/src -Llib/libasyncd/lib/qlibc/lib
 
 else ifeq ($(config),release)
 OBJDIR = obj/Release
 DEFINES += -DNDEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2
-ALL_LDFLAGS += $(LDFLAGS) -s
+ALL_LDFLAGS += $(LDFLAGS) -Llib/libasyncd/src -Llib/libasyncd/lib/qlibc/lib -s
 
 endif
 
@@ -64,7 +64,9 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/loguru_impl.o
 GENERATED += $(OBJDIR)/main.o
+OBJECTS += $(OBJDIR)/loguru_impl.o
 OBJECTS += $(OBJDIR)/main.o
 
 # Rules
@@ -129,6 +131,9 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/loguru_impl.o: src/loguru_impl.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/main.o: src/main.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
