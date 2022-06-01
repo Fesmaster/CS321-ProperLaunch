@@ -1,0 +1,1 @@
+This folder is for the client (IE, the Electron desktop app). This particular file is to make sure the folder is added to git.
