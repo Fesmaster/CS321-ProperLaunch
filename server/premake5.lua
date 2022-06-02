@@ -4,6 +4,7 @@ workspace("ProperLaunchServer")
 project("ProperLaunchServer")
    kind("ConsoleApp")
    language("C++")
+   cppdialect("C++2a")
    targetdir("bin/")
 
    pchheader("include/pch.hpp")
