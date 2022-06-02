@@ -36,3 +36,7 @@
 
 # vscode files
 **/.vscode
+
+# makefile
+**/makefile
+**/Makefile
