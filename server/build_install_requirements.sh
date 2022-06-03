@@ -9,3 +9,7 @@ cd ../..
 ./configure
 make -j8
 sudo make install
+
+sudo ln -s /usr/local/lib/libqlibc.so.2 /usr/lib/libqlibc.so.2
+sudo ln -s /usr/local/lib/libqlibcext.so.2 /usr/lib/libqlibcext.so.2
+sudo ln -s /usr/local/lib/libasyncd.so.1 /usr/lib/libasyncd.so.1
