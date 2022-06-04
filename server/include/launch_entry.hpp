@@ -1,6 +1,11 @@
 #pragma once
 #include "pch.hpp"
 
+using DateTime = std::chrono::time_point<std::chrono::system_clock>;
+//helper functions for converting date-time string to and from DateTime objects
+std::string TimeToText(const DateTime& time);
+DateTime TextToTime(const std::string& text);
+
 //this will probably expand
 enum class LaunchCode{
     CONFIRMED, 
@@ -9,13 +14,14 @@ enum class LaunchCode{
     HELD,
 };
 
+
 struct LaunchStatus{
     LaunchCode code;
     std::string description;
-    std::chrono::time_point<std::chrono::system_clock> last_updated;
-    std::chrono::time_point<std::chrono::system_clock> net;
-    std::chrono::time_point<std::chrono::system_clock> window_start;
-    std::chrono::time_point<std::chrono::system_clock> window_end;
+    DateTime last_updated;
+    DateTime net;
+    DateTime window_start;
+    DateTime window_end;
     int probability;
     std::string holdreason;
     
@@ -68,9 +74,9 @@ struct LaunchPad {
     std::string map_url;
     float latitude;
     float longitude;
-    std::string location_url;
     std::string location_name;
     std::string location_country;
+    std::string location_url;
 
     LaunchPad();
     LaunchPad(const LaunchPad& other);
@@ -111,3 +117,7 @@ struct LaunchEntry{
     */
     nlohmann::json ToJSON();
 };
+
+#ifdef TESTS_ENABLED
+void launch_entry_tests();
+#endif

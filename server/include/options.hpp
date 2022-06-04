@@ -12,3 +12,6 @@ struct Options{
 
 };
 
+#ifdef TESTS_ENABLED
+void option_tests();
+#endif
