@@ -20,6 +20,7 @@ must be included at the top of every source file
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <filesystem>
 #include <atomic>
 #include <future>

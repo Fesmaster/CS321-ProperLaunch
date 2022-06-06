@@ -1,6 +1,7 @@
 #include "pch.hpp"
 #include "server.hpp"
 #include "options.hpp"
+#include "database.hpp"
 
 #ifdef TESTS_ENABLED
 #include "tests.hpp"    
@@ -15,11 +16,18 @@ int main(int argc, char **argv) {
 
     const Options options(argc, argv);
 
+    //init the database
+    Database::Init(options.sourcePath);
+
     #ifdef TESTS_ENABLED
     if (options.runTests){
-        return run_tests();
+        auto rval = run_tests();
+        Database::Destroy();
+        return rval;
     }
     #endif
 
-    return start_server(options);
+    auto rval = start_server(options);
+    Database::Destroy();
+    return rval;
 }

@@ -4,6 +4,7 @@
 
 #include "options.hpp"
 #include "launch_entry.hpp"
+#include "database.hpp"
 
 
 int run_tests(){
@@ -11,6 +12,7 @@ int run_tests(){
     //all the test functions should be called here    
     option_tests();
     launch_entry_tests();
+    database_tests();
 
     return 0;
 }
