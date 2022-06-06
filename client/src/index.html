@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>ProperLaunch™</title>
+    <link rel ="stylesheet" href="styles/style.css">
+    <script src="./renderer.js"></script>
+  </head>
+  <body>
+    <div class ="mainApp">
+      <div class = "topBar">
+        <div class="titleBar">
+     <img src="images/rocket_15.png" alt=""> 
+      <div class = "appName"><h2>ProperLaunch™</h2></div>
+      </div>
+    </div>
+    <div class ="searchWrapper">
+        <label for="search"> Search</label>
+        <input type="search" id="search">
+    </div>
+    <div class ="alarm"><p id="alarmClock"><b>Set Alarm</b></p>
+    <input type="datetime-local" id="alarmTime" />
+  <button onclick="setAlarm(this);" id =alarmSetter>Set Alarm</button></button></div>
+  </div>
+  
+    <div class ="card">
+    <div class ="recentLaunch">
+      <div class="header">Rocket Name</div>
+      <div class="body">Rocket Info</div>
+    </div>
+    <div class ="recentLaunch">
+      <div class="header">Rocket Name</div>
+      <div class="body">Rocket Info</div>
+    </div>
+    <div class ="recentLaunch">
+      <div class="header">Rocket Name</div>
+      <div class="body">Rocket Info</div>
+    </div>
+  </div>
+    
+  </body>
+</html>
