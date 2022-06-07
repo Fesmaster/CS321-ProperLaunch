@@ -1,5 +1,5 @@
 #! /bin/bash
-sudo apt install libevent-2.1-7 libevent-core-2.1-7 libevent-dev libevent-extra-2.1-7 libevent-openssl-2.1-7 libevent-pthreads-2.1-7
+sudo apt install libevent-2.1-7 libevent-core-2.1-7 libevent-dev libevent-extra-2.1-7 libevent-openssl-2.1-7 libevent-pthreads-2.1-7 libssl-dev
 
 cd ./lib/libasyncd/lib/qlibc
 cmake .
