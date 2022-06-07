@@ -1,6 +1,17 @@
 #pragma once
 #include "launch_entry.hpp"
 
+enum class SortKey : uint32_t{
+    NAME=0, 
+    DATE, 
+    ROCKET, 
+    PROVIDER, 
+    MISSION, 
+    PAD, 
+    LOCATION, 
+    MAXINDEX //simply for looping over all these values
+};
+
 class Database{
 
 public:
@@ -22,6 +33,21 @@ public:
     static void Destroy();
 
     /*
+    Get a launch entry from the master list
+    */
+    const LaunchEntry& GetEntryFromMaster(uint32_t index) const;
+
+    /*
+    Get the size of the Master List
+    */
+    size_t GetMasterListSize() const;
+
+    /*
+    Get a sorted list
+    */
+    const std::vector<uint32_t>& GetSortedIndex(SortKey key) const;
+
+    /*
     TESTING ONLY, to REMOVE. Or, use as template for functions that will reply when the server is queried.
     */
     std::string DumpMasterListJSON();
@@ -39,6 +65,7 @@ private:
 
     std::string m_Path;
     std::vector<LaunchEntry> m_MasterList;
+    std::array<std::vector<uint32_t>, (size_t)SortKey::MAXINDEX> m_SortedIndices; 
 };
 
 
