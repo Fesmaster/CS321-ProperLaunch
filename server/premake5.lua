@@ -1,3 +1,6 @@
+
+
+
 workspace("ProperLaunchServer")
    configurations({ "Debug", "Release" })
 
@@ -45,9 +48,15 @@ project("ProperLaunchServer")
       "lib/libasyncd/lib/qlibc/lib"
    })
 
+   
    filter("configurations:Debug")
-      defines({ "DEBUG" })
+      --read in how many COVERAGE_BRANCH_* statements there are in the source files
+      local h = io.popen("./count_branches.sh")
+   
+      defines({ "DEBUG", "T_BRANCH_COUNT="..h:read("*a"):sub(1,-2) })
       symbols("On")
+
+      h:close()
 
    filter("configurations:Release")
       defines({ "NDEBUG" })

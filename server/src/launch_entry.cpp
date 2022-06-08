@@ -1,28 +1,31 @@
 #include "pch.hpp"
 #include "launch_entry.hpp"
-
+#include "tests.hpp"
 
 std::string LaunchCodeToText(LaunchCode code){
+    COVERAGE_BRANCH
     switch(code){
-        case LaunchCode::CONFIRMED : return "GO";
-        case LaunchCode::UNCONFIRMED : return "TBC";
-        case LaunchCode::UNDETERMINED : return "TBD";
-        case LaunchCode::HELD : return "HELD";
-        default : return "TBD"; //default error case
+        case LaunchCode::CONFIRMED : COVERAGE_BRANCH return "GO";
+        case LaunchCode::UNCONFIRMED :COVERAGE_BRANCH return "TBC";
+        case LaunchCode::UNDETERMINED :COVERAGE_BRANCH return "TBD";
+        case LaunchCode::HELD :COVERAGE_BRANCH return "HELD";
+        default :COVERAGE_BRANCH return "TBD"; //default error case
     }
 }
 
-//NEEDS TESTING
+
 LaunchCode InterpretSpaceDevLaunchAbbrev(std::string code){
-    if (code == "TBC") {return LaunchCode::UNCONFIRMED;}
-    else if (code == "TBD") {return LaunchCode::UNDETERMINED;}
-    else if (code == "Go") {return LaunchCode::CONFIRMED;}
+    COVERAGE_BRANCH
+    if (code == "TBC") {COVERAGE_BRANCH return LaunchCode::UNCONFIRMED;}
+    else if (code == "TBD") {COVERAGE_BRANCH return LaunchCode::UNDETERMINED;}
+    else if (code == "Go") {COVERAGE_BRANCH return LaunchCode::CONFIRMED;}
     //what exactly the code is for "held" is unknown right now
-    else {return LaunchCode::UNDETERMINED;}
+    else {COVERAGE_BRANCH return LaunchCode::UNDETERMINED;}
 }
 
 
 std::string TimeToText(const DateTime& time){
+    COVERAGE_BRANCH
     std::stringstream ss;
     std::time_t t_c = std::chrono::system_clock::to_time_t(time);
     ss << std::put_time(std::gmtime(&t_c), "%FT%TZ" );
@@ -30,6 +33,7 @@ std::string TimeToText(const DateTime& time){
 }
 
 DateTime TextToTime(const std::string& text){
+    COVERAGE_BRANCH
     std::stringstream ss(text);
     std::tm tm = {};
     //yes, this is different from the format string in TimeToText, but std::get_time does not
@@ -40,283 +44,362 @@ DateTime TextToTime(const std::string& text){
 
 //NEEDS TESTING
 std::optional<LaunchEntry> LaunchEntry::CreateLaunchEntry(nlohmann::json json){
+    COVERAGE_BRANCH
     if (json.is_object()){
+        COVERAGE_BRANCH
         LaunchEntry e{};
         if (json["id"].is_string()){
+            COVERAGE_BRANCH
             e.uid = json["id"].get<std::string>();
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry ID unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
         if (json["url"].is_string()){
+            COVERAGE_BRANCH
             e.url = json["url"].get<std::string>();
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry url unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
         if (json["name"].is_string()){
+            COVERAGE_BRANCH
             e.name = json["name"].get<std::string>();
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry name unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
         if (json["status"].is_object() && json["status"]["abbrev"].is_string()){
+            COVERAGE_BRANCH
             e.status.code = InterpretSpaceDevLaunchAbbrev(json["status"]["abbrev"].get<std::string>());
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry status abbrev unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
         if (json["status"].is_object() && json["status"]["description"].is_string()){
+            COVERAGE_BRANCH
             e.status.description = json["status"]["description"].get<std::string>();
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry status description unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
         if (json["last_updated"].is_string()){
+            COVERAGE_BRANCH
             e.status.last_updated = TextToTime(json["last_updated"].get<std::string>());
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry last updated time unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
         if (json["net"].is_string()){
+            COVERAGE_BRANCH
             e.status.net = TextToTime(json["net"].get<std::string>());
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry net time unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
         if (json["window_end"].is_string()){
+            COVERAGE_BRANCH
             e.status.window_end = TextToTime(json["window_end"].get<std::string>());
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry window end time unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
         if (json["window_start"].is_string()){
+            COVERAGE_BRANCH
             e.status.window_start = TextToTime(json["window_start"].get<std::string>());
         }
         else{
+            COVERAGE_BRANCH
             return std::nullopt;
             LOG_S(ERROR) << "LaunchEntry window start time unable to import. Key is not in source. Aborting parse.";
         }
 
         if (json["probability"].is_number()){
+            COVERAGE_BRANCH
             e.status.probability = json["probability"].get<int>();
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(WARNING) << "LaunchEntry probability unable to import. Key is not in source.";
         }
 
         if (json["holdreason"].is_string()){
+            COVERAGE_BRANCH
             e.status.holdreason = json["holdreason"].get<std::string>();
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(WARNING) << "LaunchEntry holdreason unable to import. Key is not in source.";
         }
 
         auto provider = json["launch_service_provider"];
         if (provider.is_object()){
+            COVERAGE_BRANCH
 
             if (provider["name"].is_string()){
+                COVERAGE_BRANCH
                 e.provider.name = provider["name"].get<std::string>();
             }else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "Unknown launch provider name was encoutnered. The key was not a string in source.";
             }
 
             if (provider["type"].is_string()){
+                COVERAGE_BRANCH
                 e.provider.type = provider["type"].get<std::string>();
             }else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "Unknown launch provider type was encoutnered. The key was not a string in source.";
             }
 
             if (provider["url"].is_string()){
+                COVERAGE_BRANCH
                 e.provider.url = provider["url"].get<std::string>();
             }else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "Unknown launch provider url was encoutnered. The key was not a string in source.";
             }
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(WARNING) << "An unknown launch provider was encountered - the whole key \"launch_service_provider\" was not an object in source";
         }
 
         auto rocket = json["rocket"];
         if (rocket.is_object()){
+            COVERAGE_BRANCH
             auto rocket_config = rocket["configuration"];
             if (rocket_config.is_object()){
-
+                COVERAGE_BRANCH
                 if (rocket_config["name"].is_string()){
+                    COVERAGE_BRANCH
                     e.rocket.name = rocket_config["name"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "An unknown rocket name was encountered. The key was not a string in source.";
                 }
 
                 if (rocket_config["family"].is_string()){
+                    COVERAGE_BRANCH
                     e.rocket.family = rocket_config["family"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "An unknown rocket family was encountered. The key was not a string in source.";
                 }
 
                 if (rocket_config["variant"].is_string()){
+                    COVERAGE_BRANCH
                     e.rocket.variant = rocket_config["variant"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "An unknown rocket variant was encountered. The key was not a string in source.";
                 }
 
                 if (rocket_config["url"].is_string()){
+                    COVERAGE_BRANCH
                     e.rocket.url = rocket_config["url"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "An unknown rocket url was encountered. The key was not a string in source.";
                 }
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown rocket was encoutntered - the subkey \"configuration\" was not an object in source";
             }
         }else{
+            COVERAGE_BRANCH
             LOG_S(WARNING) << "An unknown rocket was encountered - the whole key \"rocket\" was not an object in source";
         }
 
         auto mission = json["mission"];
         if (mission.is_object()){
+            COVERAGE_BRANCH
             if (mission["name"].is_string()){
+                COVERAGE_BRANCH
                 e.mission.name = mission["name"].get<std::string>();
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown mission name was encoutered. The key was not a string in source.";
             }
 
             if (mission["description"].is_string()){
+                COVERAGE_BRANCH
                 e.mission.description = mission["description"].get<std::string>();
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown mission description was encoutered. The key was not a string in source.";
             }
 
             if (mission["type"].is_string()){
+                COVERAGE_BRANCH
                 e.mission.type = mission["type"].get<std::string>();
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown mission type was encoutered. The key was not a string in source.";
             }
             auto orbit = mission["orbit"];
             if (orbit.is_object()){
+                COVERAGE_BRANCH
                 if (orbit["name"].is_string()){
+                    COVERAGE_BRANCH
                     e.mission.orbit_name = orbit["name"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "Unknown mission orbit name was encounteres. The key was not a string in source";
                 }
 
                 if (orbit["abbrev"].is_string()){
+                    COVERAGE_BRANCH
                     e.mission.orbit_abbrev = orbit["abbrev"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "Unknown mission orbit abbrev was encounteres. The key was not a string in source";
                 }
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown mission orbit was encoutered. The key was not an object in source.";
             }
 
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(WARNING) << "An unknown mission was encountered - the whole key \"mission\" was not an object in source";
         }
 
         auto pad = json["pad"];
         if (pad.is_object()){
+            COVERAGE_BRANCH
             if (pad["name"].is_string()){
+                COVERAGE_BRANCH
                 e.pad.name = pad["name"].get<std::string>();
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown pad name was encountered. The key was not a string in source";
             }
 
             if (pad["url"].is_string()){
+                COVERAGE_BRANCH
                 e.pad.url = pad["url"].get<std::string>();
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown pad url was encountered. The key was not a string in source";
             }
 
             if (pad["map_url"].is_string()){
+                COVERAGE_BRANCH
                 e.pad.map_url = pad["map_url"].get<std::string>();
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown pad map_url was encountered. The key was not a string in source";
             }
 
             if (pad["latitude"].is_string()){
+                COVERAGE_BRANCH
                 std::stringstream ss(pad["latitude"].get<std::string>());
                 ss >> e.pad.latitude;
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown pad latitude was encountered. The key was not a string in source";
             }
 
             if (pad["longitude"].is_string()){
+                COVERAGE_BRANCH
                 std::stringstream ss(pad["longitude"].get<std::string>());
                 ss >> e.pad.longitude;
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown pad longitude was encountered. The key was not a string in source";
             }
             auto location = pad["location"];
             if (location.is_object()){
+                COVERAGE_BRANCH
                 if (location["name"].is_string()){
+                    COVERAGE_BRANCH
                     e.pad.location_name = location["name"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "An unknown pad location name was encountered. The key was not a string in source";
                 }
 
                 if (location["country_code"].is_string()){
+                    COVERAGE_BRANCH
                     e.pad.location_country = location["country_code"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "An unknown pad location country_code was encountered. The key was not a string in source";
                 }
 
                 if (location["url"].is_string()){
+                    COVERAGE_BRANCH
                     e.pad.location_url = location["url"].get<std::string>();
                 }
                 else{
+                    COVERAGE_BRANCH
                     LOG_S(WARNING) << "An unknown pad location url was encountered. The key was not a string in source";
                 }
             }
             else{
+                COVERAGE_BRANCH
                 LOG_S(WARNING) << "An unknown pad location was encountered. The key was not an object in source";
             }
         }
         else{
+            COVERAGE_BRANCH
             LOG_S(WARNING) << "An unknown pad was encountered - the whole key \"pad\" was not an object in source";
         }
 
         return std::optional<LaunchEntry>(std::move(e));
     }
+    COVERAGE_BRANCH_ELSE
     LOG_S(ERROR) << "Unable to parse a json object that is not a full object for a LaunchEntry. Arrays and subtypes are not allowed. Aborting parse.";
     return std::nullopt; //an empty optional is returned. 
 }
 
 //NEEDS TESTING
 nlohmann::json LaunchEntry::ToJSON(){
+    COVERAGE_BRANCH
     return nlohmann::json({
         {"name", name},
         {"uid", uid},
@@ -378,13 +461,14 @@ LaunchStatus::LaunchStatus()
 : code(LaunchCode::CONFIRMED), description(""), last_updated(std::chrono::system_clock::now()),
 net(std::chrono::system_clock::now()), window_start(std::chrono::system_clock::now()), 
 window_end(std::chrono::system_clock::now()), probability(-1), holdreason("")
-{}
+{COVERAGE_BRANCH}
 LaunchStatus::LaunchStatus(const LaunchStatus& other)
 : code(other.code), description(other.description), last_updated(other.last_updated),
 net(other.net), window_start(other.window_start), window_end(other.window_end),
 probability(other.probability), holdreason(other.holdreason)
-{}
+{COVERAGE_BRANCH}
 LaunchStatus& LaunchStatus::operator=(const LaunchStatus& other){
+    COVERAGE_BRANCH
     code = other.code;
     description = other.description;
     last_updated = other.last_updated;
@@ -400,15 +484,16 @@ LaunchStatus::LaunchStatus(LaunchStatus&& other)
 last_updated(std::move(other.last_updated)), net(std::move(other.net)), 
 window_start(std::move(other.window_start)), window_end(std::move(other.window_end)),
 probability(other.probability), holdreason(std::move(other.holdreason))
-{}
+{COVERAGE_BRANCH}
 
 LaunchProvider::LaunchProvider()
 : name(""), type(""), url("")
-{}
+{COVERAGE_BRANCH}
 LaunchProvider::LaunchProvider(const LaunchProvider& other)
 : name(other.name), type(other.type), url(other.url)
-{}
+{COVERAGE_BRANCH}
 LaunchProvider& LaunchProvider::operator=(const LaunchProvider& other){
+    COVERAGE_BRANCH
     name = other.name;
     type = other.type;
     url = other.url;
@@ -416,15 +501,16 @@ LaunchProvider& LaunchProvider::operator=(const LaunchProvider& other){
 }
 LaunchProvider::LaunchProvider(LaunchProvider&& other)
 : name(std::move(other.name)), type(std::move(other.type)), url(std::move(other.url))
-{}
+{COVERAGE_BRANCH}
 
 LaunchVessel::LaunchVessel()
 :name(""), family(""), variant(""), url("")
-{}
+{COVERAGE_BRANCH}
 LaunchVessel::LaunchVessel(const LaunchVessel& other)
 : name(other.name), family(other.family), variant(other.variant), url(other.url)
-{}
+{COVERAGE_BRANCH}
 LaunchVessel& LaunchVessel::operator=(const LaunchVessel& other){
+    COVERAGE_BRANCH
     name = other.name;
     family = other.family;
     variant = other.variant;
@@ -434,16 +520,17 @@ LaunchVessel& LaunchVessel::operator=(const LaunchVessel& other){
 LaunchVessel::LaunchVessel(LaunchVessel&& other)
 :name(std::move(other.name)), family(std::move(other.family)), 
 variant(std::move(other.variant)), url(std::move(other.url))
-{}
+{COVERAGE_BRANCH}
 
 LaunchMission::LaunchMission()
 :name(""), description(""), type(""), orbit_name(""), orbit_abbrev("")
-{}
+{COVERAGE_BRANCH}
 LaunchMission::LaunchMission(const LaunchMission& other)
 : name(other.name), description(other.description), type(other.type),
 orbit_name(other.orbit_name), orbit_abbrev(other.orbit_abbrev)
-{}
+{COVERAGE_BRANCH}
 LaunchMission& LaunchMission::operator=(const LaunchMission& other){
+    COVERAGE_BRANCH
     name = other.name;
     description = other.description;
     type = other.type;
@@ -454,19 +541,20 @@ LaunchMission& LaunchMission::operator=(const LaunchMission& other){
 LaunchMission::LaunchMission(LaunchMission&& other)
 : name(std::move(other.name)), description(std::move(other.description)), type(std::move(other.type)),
 orbit_name(std::move(other.orbit_name)), orbit_abbrev(std::move(other.orbit_abbrev))
-{}
+{COVERAGE_BRANCH}
 
 LaunchPad::LaunchPad()
 : name(""), url(""), map_url(""), latitude(0.0f), longitude(0.0f),
 location_url(""), location_name(""), location_country("")
-{}
+{COVERAGE_BRANCH}
 LaunchPad::LaunchPad(const LaunchPad& other)
 : name(other.name), url(other.url), map_url(other.map_url), 
 latitude(other.latitude), longitude(other.longitude),
 location_url(other.location_url), location_name(other.location_name), 
 location_country(other.location_country)
-{}
+{COVERAGE_BRANCH}
 LaunchPad& LaunchPad::operator=(const LaunchPad& other){
+    COVERAGE_BRANCH
     name = other.name;
     url = other.url;
     map_url = other.map_url;
@@ -482,18 +570,19 @@ LaunchPad::LaunchPad(LaunchPad&& other)
 latitude(std::move(other.latitude)), longitude(std::move(other.longitude)),
 location_url(std::move(other.location_url)), location_name(std::move(other.location_name)), 
 location_country(std::move(other.location_country))
-{}
+{COVERAGE_BRANCH}
 
 LaunchEntry::LaunchEntry()
 : uid(""), name(""), url(""),
 status(), provider(), rocket(), mission(), pad() //these call the default constructors of those custom types
-{}
+{COVERAGE_BRANCH}
 LaunchEntry::LaunchEntry(const LaunchEntry& other)
 : uid(other.uid), name(other.name), url(other.url),
 status(other.status), provider(other.provider), rocket(other.rocket),
 mission(other.mission), pad(other.pad)
-{}
+{COVERAGE_BRANCH}
 LaunchEntry& LaunchEntry::operator=(const LaunchEntry& other){
+    COVERAGE_BRANCH
     uid = other.uid;
     name = other.name;
     url = other.url;
@@ -508,7 +597,7 @@ LaunchEntry::LaunchEntry(LaunchEntry&& other)
 : uid(std::move(other.uid)), name(std::move(other.name)), url(std::move(other.url)),
 status(std::move(other.status)), provider(std::move(other.provider)), 
 rocket(std::move(other.rocket)), mission(std::move(other.mission)), pad(std::move(other.pad))
-{}
+{COVERAGE_BRANCH}
 
 
 #ifdef TESTS_ENABLED
@@ -523,6 +612,12 @@ void launch_entry_tests(){
     CHECK_EQ_F(LaunchCodeToText(LaunchCode::HELD), "HELD", "LaunchCodeToText failure.");
     CHECK_EQ_F(LaunchCodeToText(((LaunchCode)100)), "TBD", "LaunchCodeToText failure."); //intentional stupid code
     
+    CHECK_EQ_F(InterpretSpaceDevLaunchAbbrev("Go"), LaunchCode::CONFIRMED, "InterpretSpaceDevLaunchAbbrev failed on \"GO\"");
+    CHECK_EQ_F(InterpretSpaceDevLaunchAbbrev("TBC"), LaunchCode::UNCONFIRMED, "InterpretSpaceDevLaunchAbbrev failed on \"TBC\"");
+    CHECK_EQ_F(InterpretSpaceDevLaunchAbbrev("TBD"), LaunchCode::UNDETERMINED, "InterpretSpaceDevLaunchAbbrev failed on \"TBD\"");
+    CHECK_EQ_F(InterpretSpaceDevLaunchAbbrev("anything else"), LaunchCode::UNDETERMINED, "InterpretSpaceDevLaunchAbbrev failed on default case");
+    
+
     std::array<std::string, 6> times = {"2022-05-25T18:27:00Z", "2022-05-18T13:08:58Z", "2022-05-31T13:30:00Z",
     "2022-05-31T13:30:00Z", "2022-05-17T14:08:21Z","2022-12-31T00:00:00Z"};
     for (auto t: times){
