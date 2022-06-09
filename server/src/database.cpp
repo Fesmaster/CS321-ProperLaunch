@@ -224,7 +224,7 @@ Database* Database::Init(const std::string& path){
 }
 
 void Database::Destroy(){
-    COVERAGE_BRANCH
+    //COVERAGE BRANCH //this will never get coverage as its destroyed after coverage is measured.
     DCHECK_NOTNULL_F(Database::s_Singleton, "ERROR: The database was not initialized before Database::Delete() was called.");
     LOG_S(INFO) << "Database Destroyed!";
     delete s_Singleton;
@@ -251,7 +251,7 @@ const std::vector<uint32_t>& Database::GetSortedIndex(SortKey key) const{
 
 
 std::string Database::DumpMasterListJSON(){
-    COVERAGE_BRANCH
+    //COVERAGE BRANCH //this is not covered in coverage tests as it is dev only and will be removed later
     nlohmann::json jsonList = nlohmann::json::object();
     jsonList["results"] = nlohmann::json::array();
     jsonList["count"] = m_MasterList.size();
@@ -380,7 +380,7 @@ void database_tests(){
     LOG_S(INFO) << "Database Tests complete";
 
 
-    auto d = utmdata("Quick brown fox.");
+    
 
 }
 #endif

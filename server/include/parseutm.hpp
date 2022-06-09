@@ -34,3 +34,6 @@ struct utmdata{
 };
 
 
+#ifdef TESTS_ENABLED
+void utm_tests();
+#endif

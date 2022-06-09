@@ -18,13 +18,25 @@ utmdata::utmdata(const std::string& utmstr)
 		
 		LOG_S(INFO) << "Found " 
               << std::distance(words_begin, words_end) 
-              << " words:\n";
+              << " words:";
 
 		for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
         	std::smatch match = *i;                                                 
         	std::string match_str = match.str(); 
-        	LOG_S(INFO) << match_str << '\n';
+        	LOG_S(INFO) << match_str;
     	}  
 
 	}
 }
+
+
+
+
+#ifdef TESTS_ENABLED
+void utm_tests(){
+	LOG_S(INFO) << "UTM Tests begin.";
+	auto d = utmdata("Quick brown fox.");
+
+	LOG_S(INFO) << "UTM Tests completed.";
+}
+#endif
