@@ -1,5 +1,6 @@
 #include "pch.hpp"
 #include "database.hpp"
+#include "tests.hpp"
 
 /*
 Sorting Structs
@@ -13,9 +14,12 @@ struct name_compare{
     {}
 
     bool operator()(const uint32_t& a, const uint32_t& b){
+        COVERAGE_BRANCH
         if (a < masterListRef.size() && b < masterListRef.size() ){
+            COVERAGE_BRANCH
             return masterListRef[a].name < masterListRef[b].name;
         }
+        COVERAGE_NEVER_ELSE
         return false;
     }
 };
@@ -27,9 +31,12 @@ struct date_compare{
     {}
 
     bool operator()(const uint32_t& a, const uint32_t& b){
+        COVERAGE_BRANCH
         if (a < masterListRef.size() && b < masterListRef.size() ){
+            COVERAGE_BRANCH
             return masterListRef[a].status.window_start < masterListRef[b].status.window_start;
         }
+        COVERAGE_NEVER_ELSE
         return false;
     }
 };
@@ -41,9 +48,12 @@ struct rocket_compare{
     {}
 
     bool operator()(const uint32_t& a, const uint32_t& b){
+        COVERAGE_BRANCH
         if (a < masterListRef.size() && b < masterListRef.size() ){
+            COVERAGE_BRANCH
             return masterListRef[a].rocket.name < masterListRef[b].rocket.name;
         }
+        COVERAGE_NEVER_ELSE
         return false;
     }
 };
@@ -55,9 +65,12 @@ struct provider_compare{
     {}
 
     bool operator()(const uint32_t& a, const uint32_t& b){
+        COVERAGE_BRANCH
         if (a < masterListRef.size() && b < masterListRef.size() ){
+            COVERAGE_BRANCH
             return masterListRef[a].provider.name < masterListRef[b].provider.name;
         }
+        COVERAGE_NEVER_ELSE
         return false;
     }
 };
@@ -68,9 +81,12 @@ struct mission_compare{
     {}
 
     bool operator()(const uint32_t& a, const uint32_t& b){
+        COVERAGE_BRANCH
         if (a < masterListRef.size() && b < masterListRef.size() ){
+            COVERAGE_BRANCH
             return masterListRef[a].mission.name < masterListRef[b].mission.name;
         }
+        COVERAGE_NEVER_ELSE
         return false;
     }
 };
@@ -81,9 +97,12 @@ struct pad_compare{
     {}
 
     bool operator()(const uint32_t& a, const uint32_t& b){
+        COVERAGE_BRANCH
         if (a < masterListRef.size() && b < masterListRef.size() ){
+            COVERAGE_BRANCH
             return masterListRef[a].pad.name < masterListRef[b].pad.name;
         }
+        COVERAGE_NEVER_ELSE
         return false;
     }
 };
@@ -94,9 +113,12 @@ struct location_compare{
     {}
 
     bool operator()(const uint32_t& a, const uint32_t& b){
+        COVERAGE_BRANCH
         if (a < masterListRef.size() && b < masterListRef.size() ){
+            COVERAGE_BRANCH
             return masterListRef[a].pad.location_name < masterListRef[b].pad.location_name;
         }
+        COVERAGE_NEVER_ELSE
         return false;
     }
 };
@@ -110,6 +132,7 @@ Database* Database::s_Singleton = nullptr;
 Database::Database(const std::string& path)
 : m_Path(path)
 {
+    COVERAGE_BRANCH
     //load the file
     std::ifstream databaseFile(path, std::ios::in);
     //this error message is intentionally NOT debug-mode only
@@ -128,9 +151,11 @@ Database::Database(const std::string& path)
     for(auto jsonLaunchData : importedJSON["results"]){
         auto entry = LaunchEntry::CreateLaunchEntry(jsonLaunchData);
         if (entry){
+            COVERAGE_BRANCH
             //this line must use std::move to ensure no copying of the entry.
             m_MasterList.push_back(std::move(*entry));
         }
+        COVERAGE_BRANCH_ELSE //This one will likely never be run. It is nesecary because it is part of the data parsing system.
     }
     
     //make sorted lists
@@ -185,11 +210,13 @@ Database::Database(const std::string& path)
 }
 
 Database* Database::Get(){
+    COVERAGE_BRANCH
     DCHECK_NOTNULL_F(Database::s_Singleton, "ERROR: The database was not initialized before Database::Get() was called, or, it was Destroyed.");
     return s_Singleton;
 }
 
 Database* Database::Init(const std::string& path){
+    COVERAGE_BRANCH
     DCHECK_EQ_F(Database::s_Singleton, nullptr, "ERROR: the database cannot be initialized twice!");
     Database::s_Singleton = new Database(path);
     LOG_S(INFO) << "Database Created!";
@@ -197,6 +224,7 @@ Database* Database::Init(const std::string& path){
 }
 
 void Database::Destroy(){
+    COVERAGE_BRANCH
     DCHECK_NOTNULL_F(Database::s_Singleton, "ERROR: The database was not initialized before Database::Delete() was called.");
     LOG_S(INFO) << "Database Destroyed!";
     delete s_Singleton;
@@ -204,22 +232,26 @@ void Database::Destroy(){
 
 
 const LaunchEntry& Database::GetEntryFromMaster(uint32_t index) const{
+    COVERAGE_BRANCH
     DCHECK_F(index < m_MasterList.size(), "Index passed to GetEntryFromMaster must be less than masterlist size");
     return m_MasterList[index];
 }
 
 
 size_t Database::GetMasterListSize() const{
+    COVERAGE_BRANCH
     return m_MasterList.size();
 }
 
 
 const std::vector<uint32_t>& Database::GetSortedIndex(SortKey key) const{
+    COVERAGE_BRANCH
     return m_SortedIndices[(size_t)key];
 }
 
 
 std::string Database::DumpMasterListJSON(){
+    COVERAGE_BRANCH
     nlohmann::json jsonList = nlohmann::json::object();
     jsonList["results"] = nlohmann::json::array();
     jsonList["count"] = m_MasterList.size();

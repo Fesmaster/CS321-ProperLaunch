@@ -20,7 +20,6 @@ int run_tests(){
 }
 
 
-
 void coverage_marker(const std::string& file, const std::string& func, int line){
     std::stringstream fullname;
     fullname << file << '#' << func << "#" << line;

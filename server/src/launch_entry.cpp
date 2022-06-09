@@ -64,8 +64,7 @@ std::optional<LaunchEntry> LaunchEntry::CreateLaunchEntry(nlohmann::json json){
         }
         else{
             COVERAGE_BRANCH
-            LOG_S(ERROR) << "LaunchEntry url unable to import. Key is not in source. Aborting parse.";
-            return std::nullopt;
+            LOG_S(WARNING) << "LaunchEntry url unable to import. Key is not in source.";
         }
 
         if (json["name"].is_string()){
@@ -94,8 +93,7 @@ std::optional<LaunchEntry> LaunchEntry::CreateLaunchEntry(nlohmann::json json){
         }
         else{
             COVERAGE_BRANCH
-            LOG_S(ERROR) << "LaunchEntry status description unable to import. Key is not in source. Aborting parse.";
-            return std::nullopt;
+            LOG_S(WARNING) << "LaunchEntry status description unable to import. Key is not in source. Aborting parse.";
         }
 
         if (json["last_updated"].is_string()){
@@ -105,16 +103,6 @@ std::optional<LaunchEntry> LaunchEntry::CreateLaunchEntry(nlohmann::json json){
         else{
             COVERAGE_BRANCH
             LOG_S(ERROR) << "LaunchEntry last updated time unable to import. Key is not in source. Aborting parse.";
-            return std::nullopt;
-        }
-
-        if (json["net"].is_string()){
-            COVERAGE_BRANCH
-            e.status.net = TextToTime(json["net"].get<std::string>());
-        }
-        else{
-            COVERAGE_BRANCH
-            LOG_S(ERROR) << "LaunchEntry net time unable to import. Key is not in source. Aborting parse.";
             return std::nullopt;
         }
 
@@ -136,6 +124,16 @@ std::optional<LaunchEntry> LaunchEntry::CreateLaunchEntry(nlohmann::json json){
             COVERAGE_BRANCH
             return std::nullopt;
             LOG_S(ERROR) << "LaunchEntry window start time unable to import. Key is not in source. Aborting parse.";
+        }
+
+        if (json["net"].is_string()){
+            COVERAGE_BRANCH
+            e.status.net = TextToTime(json["net"].get<std::string>());
+        }
+        else{
+            COVERAGE_BRANCH
+            LOG_S(WARNING) << "LaunchEntry net time unable to import. Key is not in source. Using window_start.";
+            e.status.net = e.status.window_start;
         }
 
         if (json["probability"].is_number()){
@@ -458,7 +456,7 @@ and the fourth are the move constructors (used for moving the object from one pl
 */
 
 LaunchStatus::LaunchStatus()
-: code(LaunchCode::CONFIRMED), description(""), last_updated(std::chrono::system_clock::now()),
+: code(LaunchCode::CONFIRMED), description("Status discripion unavailable"), last_updated(std::chrono::system_clock::now()),
 net(std::chrono::system_clock::now()), window_start(std::chrono::system_clock::now()), 
 window_end(std::chrono::system_clock::now()), probability(-1), holdreason("")
 {COVERAGE_BRANCH}
@@ -487,7 +485,7 @@ probability(other.probability), holdreason(std::move(other.holdreason))
 {COVERAGE_BRANCH}
 
 LaunchProvider::LaunchProvider()
-: name(""), type(""), url("")
+: name("Unknown"), type("Unknown"), url("")
 {COVERAGE_BRANCH}
 LaunchProvider::LaunchProvider(const LaunchProvider& other)
 : name(other.name), type(other.type), url(other.url)
@@ -504,7 +502,7 @@ LaunchProvider::LaunchProvider(LaunchProvider&& other)
 {COVERAGE_BRANCH}
 
 LaunchVessel::LaunchVessel()
-:name(""), family(""), variant(""), url("")
+:name("Unknown"), family("Unknown"), variant("Unknown"), url("")
 {COVERAGE_BRANCH}
 LaunchVessel::LaunchVessel(const LaunchVessel& other)
 : name(other.name), family(other.family), variant(other.variant), url(other.url)
@@ -523,7 +521,8 @@ variant(std::move(other.variant)), url(std::move(other.url))
 {COVERAGE_BRANCH}
 
 LaunchMission::LaunchMission()
-:name(""), description(""), type(""), orbit_name(""), orbit_abbrev("")
+:name("Unknown"), description("Unknown"), type("Unknown"), 
+orbit_name("Unknown"), orbit_abbrev("Unknown")
 {COVERAGE_BRANCH}
 LaunchMission::LaunchMission(const LaunchMission& other)
 : name(other.name), description(other.description), type(other.type),
@@ -544,8 +543,8 @@ orbit_name(std::move(other.orbit_name)), orbit_abbrev(std::move(other.orbit_abbr
 {COVERAGE_BRANCH}
 
 LaunchPad::LaunchPad()
-: name(""), url(""), map_url(""), latitude(0.0f), longitude(0.0f),
-location_url(""), location_name(""), location_country("")
+: name("Unknown"), url(""), map_url(""), latitude(0.0f), longitude(0.0f),
+location_url(""), location_name("Unknown"), location_country("Unknown")
 {COVERAGE_BRANCH}
 LaunchPad::LaunchPad(const LaunchPad& other)
 : name(other.name), url(other.url), map_url(other.map_url), 
@@ -605,6 +604,8 @@ rocket(std::move(other.rocket)), mission(std::move(other.mission)), pad(std::mov
 
 void launch_entry_tests(){
     LOG_S(INFO) << "Starting LaunchEntry tests";
+    LOG_S(INFO) << "Expect a bunch of yellow and red lines. As long as it does not crash, it is passing.";
+    
 
     CHECK_EQ_F(LaunchCodeToText(LaunchCode::CONFIRMED), "GO", "LaunchCodeToText failure.");
     CHECK_EQ_F(LaunchCodeToText(LaunchCode::UNCONFIRMED), "TBC", "LaunchCodeToText failure.");
@@ -781,6 +782,325 @@ void launch_entry_tests(){
     CHECK_EQ_F(json1["pad"]["location"]["name"], "Cape Canaveral, FL, USA", "pad location_name was improperly exported.");
     CHECK_EQ_F(json1["pad"]["location"]["country"], "USA", "pad location_country was improperly exported.");
     CHECK_EQ_F(json1["pad"]["location"]["url"], "https://lldev.thespacedevs.com/2.2.0/location/12/", "pad location_url was improperly exported.");
+
+
+
+    auto launchSource2 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"slug": "new-shepard-ns-21",
+			"name": "New Shepard | NS-21",
+			"status": {
+				"id": 2,
+				"name": "To Be Determined",
+				"abbrev": "TBD"
+			},
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_end": "2022-05-31T16:30:00Z",
+			"window_start": "2022-05-31T13:30:00Z",
+			"failreason": "",
+			"hashtag": null,
+			"launch_service_provider": {
+				"id": 141
+			},
+			"rocket": {
+				"id": 7573,
+				"configuration": {
+					"id": 137,
+					"full_name": "New Shepard"
+				}
+			},
+			"mission": {
+				"id": 6016,
+				"launch_designator": null,
+				"orbit": {
+					"id": 15
+				}
+			},
+			"pad": {
+				"id": 90,
+				"agency_id": 141,
+				"info_url": "http://www.blueorigin.com",
+				"wiki_url": "https://en.wikipedia.org/wiki/Corn_Ranch",
+				"location": {
+					"id": 29,
+					"map_image": "https://spacelaunchnow-prod-east.nyc3.digitaloceanspaces.com/media/launch_images/location_29_20200803142436.jpg",
+					"total_launch_count": 21,
+					"total_landing_count": 0
+				},
+				"map_image": "https://spacelaunchnow-prod-east.nyc3.digitaloceanspaces.com/media/launch_images/pad_90_20200803143233.jpg",
+				"total_launch_count": 21
+			},
+			"webcast_live": false,
+			"image": "https://spacelaunchnow-prod-east.nyc3.digitaloceanspaces.com/media/launcher_images/new2520shepard_image_20190207032624.jpeg",
+			"infographic": null,
+			"program": []
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry2 = LaunchEntry::CreateLaunchEntry(launchSource2);
+    CHECK_F(entry2.has_value(), "Failed to get the value of entry 2, a slightly information-less attempt.");
+
+    CHECK_EQ_F(entry2->url, "",                                 "url was improperly defaulted.");
+    CHECK_EQ_F(entry2->status.description, "Status discripion unavailable", "status description was improperly defaulted.");
+    CHECK_EQ_F(entry2->status.net, entry2->status.window_start, "net was improperly defaulted.");
+    CHECK_EQ_F(entry2->status.probability, -1,                  "probability was improperly defaulted.");
+    CHECK_EQ_F(entry2->status.holdreason, "",                   "holdreason was improperly defaulted.");
+    CHECK_EQ_F(entry2->provider.name, "Unknown",                "provider name was improperly defaulted.");
+    CHECK_EQ_F(entry2->provider.type, "Unknown",                "provider type was improperly defaulted.");
+    CHECK_EQ_F(entry2->provider.url, "",                        "provider url was improperly defaulted.");
+    CHECK_EQ_F(entry2->rocket.name, "Unknown",                  "rocket name was improperly defaulted.");
+    CHECK_EQ_F(entry2->rocket.family, "Unknown",                "rocket family was improperly defaulted.");
+    CHECK_EQ_F(entry2->rocket.variant, "Unknown",               "rocket variant was improperly defaulted.");
+    CHECK_EQ_F(entry2->rocket.url, "",                          "rocket url was improperly defaulted.");
+    CHECK_EQ_F(entry2->mission.name, "Unknown",                 "mission name was improperly defaulted.");
+    CHECK_EQ_F(entry2->mission.description, "Unknown",          "mission description was improperly imported.");
+    CHECK_EQ_F(entry2->mission.type, "Unknown",                 "mission type was improperly defaulted.");
+    CHECK_EQ_F(entry2->mission.orbit_name, "Unknown",           "mission orbit_name was improperly defaulted.");
+    CHECK_EQ_F(entry2->mission.orbit_abbrev, "Unknown",         "mission orbit_abbrev was improperly defaulted.");
+    CHECK_EQ_F(entry2->pad.name, "Unknown",                     "pad name was improperly defaulted.");
+    CHECK_EQ_F(entry2->pad.url, "",                             "pad url was improperly defaulted.");
+    CHECK_EQ_F(entry2->pad.map_url, "",                         "pad map_url was improperly defaulted.");
+    CHECK_EQ_F(entry2->pad.latitude, 0.0f,                      "pad latitude was improperly defaulted.");
+    CHECK_EQ_F(entry2->pad.longitude, 0.0f,                     "pad longitude was improperly defaulted.");
+    CHECK_EQ_F(entry2->pad.location_name, "Unknown",            "pad location_name was improperly defaulted.");
+    CHECK_EQ_F(entry2->pad.location_country, "Unknown",         "pad location_country was improperly defaulted.");
+    CHECK_EQ_F(entry2->pad.location_url, "",                    "pad location_url was improperly defaulted.");
+
+    auto launchSource3 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"slug": "new-shepard-ns-21",
+			"name": "New Shepard | NS-21",
+			"status": {
+				"id": 2,
+				"name": "To Be Determined",
+				"abbrev": "TBD"
+			},
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_end": "2022-05-31T16:30:00Z",
+			"window_start": "2022-05-31T13:30:00Z",
+			"failreason": "",
+			"hashtag": null,
+			"launch_service_provider": {
+				"id": 141
+			},
+			"rocket": {
+				"id": 7573
+			},
+			"mission": {
+				"id": 6016,
+				"launch_designator": null
+			},
+			"pad": {
+				"id": 90,
+				"agency_id": 141,
+				"info_url": "http://www.blueorigin.com",
+				"wiki_url": "https://en.wikipedia.org/wiki/Corn_Ranch",
+				"map_image": "https://spacelaunchnow-prod-east.nyc3.digitaloceanspaces.com/media/launch_images/pad_90_20200803143233.jpg",
+				"total_launch_count": 21
+			},
+			"webcast_live": false,
+			"image": "https://spacelaunchnow-prod-east.nyc3.digitaloceanspaces.com/media/launcher_images/new2520shepard_image_20190207032624.jpeg",
+			"infographic": null,
+			"program": []
+		}
+    )QERXY"_json;
+
+
+    std::optional<LaunchEntry> entry3 = LaunchEntry::CreateLaunchEntry(launchSource3);
+    CHECK_F(entry3.has_value(), "Failed to get the value of entry 3, a even less information attempt.");
+
+    CHECK_EQ_F(entry3->rocket.name, "Unknown",                  "rocket name was improperly defaulted.");
+    CHECK_EQ_F(entry3->rocket.family, "Unknown",                "rocket family was improperly defaulted.");
+    CHECK_EQ_F(entry3->rocket.variant, "Unknown",               "rocket variant was improperly defaulted.");
+    CHECK_EQ_F(entry3->rocket.url, "",                          "rocket url was improperly defaulted.");
+    CHECK_EQ_F(entry3->mission.orbit_name, "Unknown",           "mission orbit_name was improperly defaulted.");
+    CHECK_EQ_F(entry3->mission.orbit_abbrev, "Unknown",         "mission orbit_abbrev was improperly defaulted.");
+    CHECK_EQ_F(entry3->pad.location_name, "Unknown",            "pad location_name was improperly defaulted.");
+    CHECK_EQ_F(entry3->pad.location_country, "Unknown",         "pad location_country was improperly defaulted.");
+    CHECK_EQ_F(entry3->pad.location_url, "",                    "pad location_url was improperly defaulted.");
+
+
+    auto launchSource4 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"name": "New Shepard | NS-21",
+			"status": {
+				"name": "To Be Determined",
+				"abbrev": "TBD"
+			},
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_end": "2022-05-31T16:30:00Z",
+			"window_start": "2022-05-31T13:30:00Z"
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry4 = LaunchEntry::CreateLaunchEntry(launchSource4);
+    CHECK_F(entry4.has_value(), "Failed to get the value of entry 4, a minimal information attempt.");
+
+    CHECK_EQ_F(entry4->url, "",                                 "url was improperly defaulted.");
+    CHECK_EQ_F(entry4->status.description, "Status discripion unavailable", "status description was improperly defaulted.");
+    CHECK_EQ_F(entry4->status.net, entry2->status.window_start, "net was improperly defaulted.");
+    CHECK_EQ_F(entry4->status.probability, -1,                  "probability was improperly defaulted.");
+    CHECK_EQ_F(entry4->status.holdreason, "",                   "holdreason was improperly defaulted.");
+    CHECK_EQ_F(entry4->provider.name, "Unknown",                "provider name was improperly defaulted.");
+    CHECK_EQ_F(entry4->provider.type, "Unknown",                "provider type was improperly defaulted.");
+    CHECK_EQ_F(entry4->provider.url, "",                        "provider url was improperly defaulted.");
+    CHECK_EQ_F(entry4->rocket.name, "Unknown",                  "rocket name was improperly defaulted.");
+    CHECK_EQ_F(entry4->rocket.family, "Unknown",                "rocket family was improperly defaulted.");
+    CHECK_EQ_F(entry4->rocket.variant, "Unknown",               "rocket variant was improperly defaulted.");
+    CHECK_EQ_F(entry4->rocket.url, "",                          "rocket url was improperly defaulted.");
+    CHECK_EQ_F(entry4->mission.name, "Unknown",                 "mission name was improperly defaulted.");
+    CHECK_EQ_F(entry4->mission.description, "Unknown",          "mission description was improperly imported.");
+    CHECK_EQ_F(entry4->mission.type, "Unknown",                 "mission type was improperly defaulted.");
+    CHECK_EQ_F(entry4->mission.orbit_name, "Unknown",           "mission orbit_name was improperly defaulted.");
+    CHECK_EQ_F(entry4->mission.orbit_abbrev, "Unknown",         "mission orbit_abbrev was improperly defaulted.");
+    CHECK_EQ_F(entry4->pad.name, "Unknown",                     "pad name was improperly defaulted.");
+    CHECK_EQ_F(entry4->pad.url, "",                             "pad url was improperly defaulted.");
+    CHECK_EQ_F(entry4->pad.map_url, "",                         "pad map_url was improperly defaulted.");
+    CHECK_EQ_F(entry4->pad.latitude, 0.0f,                      "pad latitude was improperly defaulted.");
+    CHECK_EQ_F(entry4->pad.longitude, 0.0f,                     "pad longitude was improperly defaulted.");
+    CHECK_EQ_F(entry4->pad.location_name, "Unknown",            "pad location_name was improperly defaulted.");
+    CHECK_EQ_F(entry4->pad.location_country, "Unknown",         "pad location_country was improperly defaulted.");
+    CHECK_EQ_F(entry4->pad.location_url, "",                    "pad location_url was improperly defaulted.");
+
+    //now, test for when Optional return is invalid
+    auto launchSource5 = R"QERXY(
+        [1,2,3,4,5]
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry5 = LaunchEntry::CreateLaunchEntry(launchSource5);
+    CHECK_F(!entry5.has_value(), "Succeeded to get the value of entry 5, which is bad. Its not a JSON object.");
+
+    auto launchSource6 = R"QERXY(
+        {
+			"name": "New Shepard | NS-21",
+			"status": {
+				"id": 2,
+				"name": "To Be Determined",
+				"abbrev": "TBD"
+			},
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_end": "2022-05-31T16:30:00Z",
+			"window_start": "2022-05-31T13:30:00Z"
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry6 = LaunchEntry::CreateLaunchEntry(launchSource6);
+    CHECK_F(!entry6.has_value(), "Succeeded to get the value of entry 6, which is bad. It has no UID");
+
+    auto launchSource7 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"status": {
+				"id": 2,
+				"name": "To Be Determined",
+				"abbrev": "TBD"
+			},
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_end": "2022-05-31T16:30:00Z",
+			"window_start": "2022-05-31T13:30:00Z"
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry7 = LaunchEntry::CreateLaunchEntry(launchSource7);
+    CHECK_F(!entry7.has_value(), "Succeeded to get the value of entry 7, which is bad. It has no name");
+
+    auto launchSource8 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"name": "New Shepard | NS-21",
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_end": "2022-05-31T16:30:00Z",
+			"window_start": "2022-05-31T13:30:00Z"
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry8 = LaunchEntry::CreateLaunchEntry(launchSource8);
+    CHECK_F(!entry8.has_value(), "Succeeded to get the value of entry 8, which is bad. It has no status");
+
+    //there was an erronious check here (for missing status.name) but we never actually use that. But I am to lazy to renumber the rest.
+
+    auto launchSource10 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"name": "New Shepard | NS-21",
+			"status": {
+				"id": 2,
+				"name": "To Be Determined"
+			},
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_end": "2022-05-31T16:30:00Z",
+			"window_start": "2022-05-31T13:30:00Z"
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry10 = LaunchEntry::CreateLaunchEntry(launchSource10);
+    CHECK_F(!entry10.has_value(), "Succeeded to get the value of entry 10, which is bad. It has no status.abbrev");
+
+    auto launchSource11 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"name": "New Shepard | NS-21",
+			"status": {
+				"id": 2,
+				"name": "To Be Determined",
+				"abbrev": "TBD"
+			},
+			"window_end": "2022-05-31T16:30:00Z",
+			"window_start": "2022-05-31T13:30:00Z"
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry11 = LaunchEntry::CreateLaunchEntry(launchSource11);
+    CHECK_F(!entry11.has_value(), "Succeeded to get the value of entry 11, which is bad. It has no last updated");
+
+    auto launchSource12 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"name": "New Shepard | NS-21",
+			"status": {
+				"id": 2,
+				"name": "To Be Determined",
+				"abbrev": "TBD"
+			},
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_end": "2022-05-31T13:30:00Z"
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry12 = LaunchEntry::CreateLaunchEntry(launchSource12);
+    CHECK_F(!entry12.has_value(), "Succeeded to get the value of entry 12, which is bad. It has no window_start");
+
+    auto launchSource13 = R"QERXY(
+        {
+			"id": "f058ecca-bda7-4797-ae47-b5c450b1bd78",
+			"name": "New Shepard | NS-21",
+			"status": {
+				"id": 2,
+				"name": "To Be Determined",
+				"abbrev": "TBD"
+			},
+			"last_updated": "2022-05-18T13:08:58Z",
+			"window_start": "2022-05-31T13:30:00Z"
+		}
+    )QERXY"_json;
+    
+    std::optional<LaunchEntry> entry13 = LaunchEntry::CreateLaunchEntry(launchSource13);
+    CHECK_F(!entry13.has_value(), "Succeeded to get the value of entry 12, which is bad. It has no window_end");
+
+    //now, check for copy, move, and = functions on LaunEntry objects
+    LaunchEntry entry14(*entry3);
+    CHECK_EQ_F(entry14.uid, entry3->uid, "Copy constructor did not work.");
+
+    LaunchEntry entry15;
+    entry15 = entry14;
+    CHECK_EQ_F(entry15.uid, entry14.uid, "Assignment operatior did not work");
+
+    LaunchEntry entry16(std::move(entry15));
+    CHECK_EQ_F(entry16.uid, entry14.uid, "Move constructor did not work");
+
 
     LOG_S(INFO) << "LaunchEntry tests Complete";
 }
