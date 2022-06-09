@@ -1,16 +1,7 @@
 #pragma once
 #include "launch_entry.hpp"
+#include "parseutm.hpp"
 
-enum class SortKey : uint32_t{
-    NAME=0, 
-    DATE, 
-    ROCKET, 
-    PROVIDER, 
-    MISSION, 
-    PAD, 
-    LOCATION, 
-    MAXINDEX //simply for looping over all these values
-};
 
 class Database{
 

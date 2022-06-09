@@ -378,5 +378,9 @@ void database_tests(){
     LOG_S(INFO) << "Database Location Name Sort checks complete. All good!";
 
     LOG_S(INFO) << "Database Tests complete";
+
+
+    auto d = utmdata("Quick brown fox.");
+
 }
 #endif
