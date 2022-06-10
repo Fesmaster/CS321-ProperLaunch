@@ -3,9 +3,9 @@
 #include "options.hpp"
 #include "database.hpp"
 
-#ifdef TESTS_ENABLED
+
 #include "tests.hpp"    
-#endif
+
 
 
 int main(int argc, char **argv) {

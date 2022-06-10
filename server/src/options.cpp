@@ -1,34 +1,43 @@
 #include "pch.hpp"
 #include "options.hpp"
+#include "tests.hpp"
 
 Options::Options(int argc, char** argv)
 : sourcePath("./serverdata.json"), port("8888")
 {
+    COVERAGE_BRANCH
     int next_code = 0;
     for (int i=0;i<argc;i++){
         std::string s = std::string(argv[i]);
         LOG_S(1) << "Handling option: [" << s << "]";
         if (next_code == 0){
+            COVERAGE_BRANCH
             if (s == "-p" || s == "--path"){
+                COVERAGE_BRANCH
                 next_code = 1;
             }
             #ifdef TESTS_ENABLED
             else if(s == "-t" || s == "--test"){
+                COVERAGE_BRANCH
                 this->runTests = true;
             }
             #endif
             else if (s == "-o" || s == "--port"){
+                COVERAGE_BRANCH
                 next_code = 2;
             }
+            COVERAGE_BRANCH_ELSE
         }
         else {
+            COVERAGE_BRANCH
             switch (next_code){
                 case 1 : {
+                    COVERAGE_BRANCH
                     this->sourcePath = s; 
                     break;
                     }
-                case 2 : {this->port = s; break;}
-                default: {}
+                case 2 : {COVERAGE_BRANCH this->port = s; break;}
+                default: {COVERAGE_NEVER}/*This should never happen*/
             }
             next_code = 0;
         }
