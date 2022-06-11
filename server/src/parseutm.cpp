@@ -19,12 +19,11 @@
  * the filter range statement is case insensitive and its key is a string taken literally, including a blank string
  * soRt=lOcation&fIlter=loCatiOn&raNge=iDaho will work
  *
- * filterstyle is set to MAXNUM by default
+ * filterstyle is set to MAXINDEX by default
  */
 
-
 utmdata::utmdata(const std::string& utmstr)
-	: sortstyle(SortKey::DATE), filterstyle(SortKey::MAXNUM), filterrange("")
+	: sortstyle(SortKey::DATE), filterstyle(SortKey::MAXINDEX), filterrange("")
 {
 	if (!utmstr.empty()){
 
