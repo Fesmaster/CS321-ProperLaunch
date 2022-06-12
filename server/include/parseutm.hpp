@@ -1,19 +1,14 @@
 #pragma once
-/*
- * Parses the end of the UTM of the formate <original>?<"SORT="-or-"FILTER="><type-of-sort-or-filter>&<remaining-"SORT="-or-"FILTER="><type-of-sort-or-filter>
- * Sort or filter can be chosen on their own, together, or not at all
- *
- * These two are also valid
- * <original>?<"SORT="-or-"FILTER="><type-of-sort-or-filter>
- * <original>?
- *
- * '&' is used to join a sort and a filter
- * '&' can not be entered as a search character on its own so '%' has to be used as an escape character (i.e. '%&')
- */
 
-#include <iostream>
-#include <string>
-#include <cstring>
+/* 
+ * Header file with struct to store sort/filter/range from UTM
+ *
+ * <original-url>/?SORT=[sortstyle]&FILTER=[filterstyle]&RANGE=[filterrange]
+ *
+ * sort and filter keys are both Sortkey : uint32_t
+ * range key is a string(i.e. "IDAHO") literally as it was inputted
+ *
+ */
 
 enum class SortKey : uint32_t{
     NAME=0, 
@@ -27,12 +22,11 @@ enum class SortKey : uint32_t{
 };
 
 struct utmdata{
-	std::string filterstyle;
 	SortKey sortstyle;
-
+	SortKey filterstyle;
+	std::string filterrange;
 	utmdata(const std::string& utmstr);
 };
-
 
 #ifdef TESTS_ENABLED
 void utm_tests();
