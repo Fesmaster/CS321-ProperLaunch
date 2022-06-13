@@ -400,10 +400,16 @@ void database_tests(){
     }
     LOG_S(INFO) << "Database Location Name Sort checks complete. All good!";
 
+    utmdata d("");
+    d.filterrange = "Jeb";
+    auto results1 = db->GetFilteredList(d);
+    CHECK_F( results1["count"] == 2, "Count was not correct for testing data filtered with \"Jeb\"! Did you remember to use the testing dataset (-p ./testubgdata,json)?");
+
+    d.filterrange = "Lowne Aerospace";
+    auto results2 = db->GetFilteredList(d);
+    CHECK_F( results2["count"] == 1, "Count was not correct for testing data filtered with \"Lowne Aerospace\"! Did you remember to use the testing dataset (-p ./testubgdata,json)?");
+
+
     LOG_S(INFO) << "Database Tests complete";
-
-
-    
-
 }
 #endif
