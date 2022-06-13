@@ -1,6 +1,7 @@
-#include <regex>
 #include "pch.hpp"
+#include <regex>
 #include "parseutm.hpp"
+#include "tests.hpp"
 
 /*
  * Parses the end of the UTM of the format <original>?SORT=<sort-type-key>&FILTER=<filter-type-key>&RANGE=<range>
@@ -25,10 +26,12 @@
 utmdata::utmdata(const std::string& utmstr)
 	: sortstyle(SortKey::DATE), filterstyle(SortKey::MAXINDEX), filterrange("")
 {
+	COVERAGE_BRANCH
 	if (!utmstr.empty()){
+		COVERAGE_BRANCH
 
 		/* log: constructor argument */
-		LOG_S(INFO) << "CONSTRUCTOR: " << utmstr;
+		LOG_S(9) << "CONSTRUCTOR: " << utmstr;
 
 		/* vector and iterator for sort/filter types */ 
 		std::vector<std::string> strvec{"NAME", "DATE", "ROCKET", "PROVIDER", "MISSION", "PAD", "LOCATION"};
@@ -51,8 +54,8 @@ utmdata::utmdata(const std::string& utmstr)
 
 		int j = 0;
 
-		if(sm.size()>0)
-		{	
+		if(sm.size()>0){	
+			COVERAGE_BRANCH
 			/* get sort type */
 			strres = sm.str();
 
@@ -62,35 +65,36 @@ utmdata::utmdata(const std::string& utmstr)
 			/* change to upper case */
 			transform(strres.begin(), strres.end(), strres.begin(), ::toupper);
 
-			for(it = strvec.begin(), j=0; it < strvec.end(); it++, j++)
-			{
-				if(strres == *it)
-				{
+			for(it = strvec.begin(), j=0; it < strvec.end(); it++, j++){
+				if(strres == *it){
+					COVERAGE_BRANCH
 					sortstyle = (SortKey)j;
 
 					/* log: setting sortstyle */
-					LOG_S(INFO) << "Sort type match found in list for " << strres << "\nSet sortstyle key: " << j;
+					LOG_S(2) << "Sort type match found in list for " << strres << "\nSet sortstyle key: " << j;
 					break;
 				}
+				COVERAGE_BRANCH_ELSE
 			}
 
-			if(it >= strvec.end())
-			{
-				LOG_S(INFO) << "No sort type match found in list for " << strres;
+			if(it >= strvec.end()){
+				COVERAGE_BRANCH
+				LOG_S(1) << "No sort type match found in list for " << strres;
 			}
+			COVERAGE_BRANCH_ELSE
 
 		}
-		else
-		{
-			LOG_S(INFO) << "No sort statement found";
+		else{
+			COVERAGE_BRANCH
+			LOG_S(1) << "No sort statement found";
 		}
 
 		/* regex pattern for filter=<filterstyle>&range=<range> */
 		std::regex_search(str, sm, std::regex("(?=(filter=)).*?&range=.*?(?=(&|$))"));
 
 		/* Check if complete filter/range statement exists */
-		if(sm.size()>0)
-		{
+		if(sm.size()>0){
+			COVERAGE_BRANCH
 			j = 0;
 
 			strres = sm.str();
@@ -108,23 +112,23 @@ utmdata::utmdata(const std::string& utmstr)
 			/* uppercase */
 			transform(strres2.begin(), strres2.end(), strres2.begin(), ::toupper);
 
-			for(j = 0, it = strvec.begin(); it < strvec.end(); it++, j++)
-			{
-				if(strres2 == *it)
-				{
+			for(j = 0, it = strvec.begin(); it < strvec.end(); it++, j++){
+				if(strres2 == *it){
+					COVERAGE_BRANCH
 					filterstyle = (SortKey)j;
 					break;
 				}
+				COVERAGE_BRANCH_ELSE
 			}
-			if(it == strvec.end())
-			{
+			if(it == strvec.end()){
+				COVERAGE_BRANCH
 				/* log: no match to SortKey enum */
-				LOG_S(INFO) << "No filter type match found in list for " << strres2;
+				LOG_S(1) << "No filter type match found in list for " << strres2;
 			}
-			else
-			{
+			else{
+				COVERAGE_BRANCH
 				/* log: set filterstyle */
-				LOG_S(INFO) << "Filter type match found in list for " << strres2 << "\nSet filterstyle key: " << j;
+				LOG_S(2) << "Filter type match found in list for " << strres2 << "\nSet filterstyle key: " << j;
 
 				/* regex pattern for range=<range> */
 				std::regex_search(strres, sm, std::regex("(?=range=).*?(?=(&|$))"));
@@ -141,15 +145,16 @@ utmdata::utmdata(const std::string& utmstr)
 				filterrange += strres2;
 
 				/* log: set filterrange to string */
-				LOG_S(INFO) << "Set filterrange: " << strres2;
+				LOG_S(2) << "Set filterrange: " << strres2;
 			}
 
 		}
-		else
-		{
-			LOG_S(INFO) <<  "No filter/range statement found in string";
+		else{
+			COVERAGE_BRANCH
+			LOG_S(1) <<  "No filter/range statement found in string";
 		}
 	}
+	COVERAGE_BRANCH_ELSE
 
 }
 
@@ -157,6 +162,38 @@ utmdata::utmdata(const std::string& utmstr)
 void utm_tests()
 {
 	LOG_S(INFO) << "UTM Tests begin";
+
+	utmdata d1("/?sort=NAME&filter=PROVIDER&range=spacex");
+	CHECK_EQ_F(d1.sortstyle, SortKey::NAME, "parsed UTM data does not have the correct sort style");
+	CHECK_EQ_F(d1.filterstyle, SortKey::PROVIDER, "parsed UTM data does not have the correct filter style");
+	CHECK_EQ_F(d1.filterrange, "spacex", "parsed UTM data does not have the correct filter range: [%s]", d1.filterrange.c_str());
+
+
+	utmdata d2("/?something wacky here **(&^(*^&^R*&^%()*&%^");
+	CHECK_EQ_F(d2.sortstyle, SortKey::DATE, "parsed UTM data does not have the correct default sort style");
+	CHECK_EQ_F(d2.filterstyle, SortKey::MAXINDEX, "parsed UTM data does not have the correct default filter style");
+	CHECK_EQ_F(d2.filterrange, "", "parsed UTM data does not have the correct default filter range: [%s]", d2.filterrange.c_str());
+
+	utmdata d3("/?sort=NAME");
+	CHECK_EQ_F(d3.sortstyle, SortKey::NAME, "parsed UTM data does not have the correct sort style");
+	CHECK_EQ_F(d3.filterstyle, SortKey::MAXINDEX, "parsed UTM data does not have the correct default filter style");
+	CHECK_EQ_F(d3.filterrange, "", "parsed UTM data does not have the correct filter range: [%s]", d3.filterrange.c_str());
+
+	utmdata d4("/?sort=FUNKY");
+	CHECK_EQ_F(d4.sortstyle, SortKey::DATE, "parsed UTM data does not have the correct sort style");
+	CHECK_EQ_F(d4.filterstyle, SortKey::MAXINDEX, "parsed UTM data does not have the correct default filter style");
+	CHECK_EQ_F(d4.filterrange, "", "parsed UTM data does not have the correct default filter range: [%s]", d4.filterrange.c_str());
+
+	utmdata d5("/?filter=PROVIDER&range=spacex");
+	CHECK_EQ_F(d5.sortstyle, SortKey::DATE, "parsed UTM data does not have the correct default sort style");
+	CHECK_EQ_F(d5.filterstyle, SortKey::PROVIDER, "parsed UTM data does not have the correct filter style");
+	CHECK_EQ_F(d5.filterrange, "spacex", "parsed UTM data does not have the correct filter range: [%s]", d5.filterrange.c_str());
+
+	utmdata d6("/?filter=FUNKEY&range=spacex");
+	CHECK_EQ_F(d6.sortstyle, SortKey::DATE, "parsed UTM data does not have the correct default sort style");
+	CHECK_EQ_F(d6.filterstyle, SortKey::MAXINDEX, "parsed UTM data does not have the correct filter style");
+	CHECK_EQ_F(d6.filterrange, "", "parsed UTM data does not have the correct default filter range: [%s]", d6.filterrange.c_str());
+	
 	LOG_S(INFO) << "UTM Tests complete";
 }
 #endif

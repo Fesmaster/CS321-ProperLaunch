@@ -449,6 +449,7 @@ nlohmann::json LaunchEntry::ToJSON() const{
 
 
 std::string str_tolower(const std::string& str){
+    COVERAGE_BRANCH
     std::string cpy(str);
     std::transform(str.begin(), str.end(), cpy.begin(), [](unsigned char c){return std::tolower(c);});
     return cpy;
@@ -1140,6 +1141,11 @@ void launch_entry_tests(){
     LaunchEntry entry16(std::move(entry15));
     CHECK_EQ_F(entry16.uid, entry14.uid, "Move constructor did not work");
 
+    CHECK_EQ_F(str_tolower("LoWerCaSe"), "lowercase", "str_tolower() does not work as expected");
+    CHECK_EQ_F(str_tolower("nUmb3rs783"), "numb3rs783", "str_tolower() does not work as expected");
+
+    CHECK_F(entry14.DoesMatchString("shepard"), "A launch entry that contains a string cannot find that string in it!");
+    CHECK_F(!entry14.DoesMatchString("not-present"), "A launch entry that does not contain a string found that string in it!");
 
     LOG_S(INFO) << "LaunchEntry tests Complete";
 }
