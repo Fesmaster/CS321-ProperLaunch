@@ -39,6 +39,11 @@ public:
     const std::vector<uint32_t>& GetSortedIndex(SortKey key) const;
 
     /*
+    Search and sort according to a query. return the JSON object
+    */
+    nlohmann::json GetFilteredList(const utmdata& query) const;
+
+    /*
     TESTING ONLY, to REMOVE. Or, use as template for functions that will reply when the server is queried.
     */
     std::string DumpMasterListJSON();

@@ -396,7 +396,7 @@ std::optional<LaunchEntry> LaunchEntry::CreateLaunchEntry(nlohmann::json json){
 }
 
 //NEEDS TESTING
-nlohmann::json LaunchEntry::ToJSON(){
+nlohmann::json LaunchEntry::ToJSON() const{
     COVERAGE_BRANCH
     return nlohmann::json({
         {"name", name},
@@ -446,6 +446,45 @@ nlohmann::json LaunchEntry::ToJSON(){
         }}
     });
 }
+
+
+std::string str_tolower(const std::string& str){
+    std::string cpy(str);
+    std::transform(str.begin(), str.end(), cpy.begin(), [](unsigned char c){return std::tolower(c);});
+    return cpy;
+}
+
+bool LaunchEntry::DoesMatchString(const std::string& other) const{
+    COVERAGE_BRANCH
+    std::string lowerSearch = str_tolower(other);
+    if (
+        (str_tolower(name).find(lowerSearch) != std::string::npos) ||
+        (str_tolower(LaunchCodeToText(status.code)).find(lowerSearch) != std::string::npos) ||
+        (str_tolower(status.description).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(provider.name).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(provider.type).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(rocket.name).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(rocket.family).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(rocket.variant).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(mission.name).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(mission.description).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(mission.type).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(mission.orbit_name).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(mission.orbit_abbrev).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(pad.name).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(pad.location_name).find(lowerSearch) != std::string::npos) || 
+        (str_tolower(pad.location_country).find(lowerSearch) != std::string::npos)
+    ){
+        COVERAGE_BRANCH
+        return true;
+    }
+    else{
+        COVERAGE_BRANCH
+        //TODO Add date searching here
+        return false;
+    }
+}
+
 
 /*
 Constructors

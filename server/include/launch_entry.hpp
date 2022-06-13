@@ -115,7 +115,12 @@ struct LaunchEntry{
     /*
     Create a JSON object of our format from the particular LaunchData.
     */
-    nlohmann::json ToJSON();
+    nlohmann::json ToJSON() const;
+
+    /*
+    Search this object for the string. Returns true if it can be found, false otherwise
+    */
+    bool DoesMatchString(const std::string& other) const;
 };
 
 #ifdef TESTS_ENABLED

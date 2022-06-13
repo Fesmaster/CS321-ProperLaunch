@@ -246,7 +246,30 @@ size_t Database::GetMasterListSize() const{
 
 const std::vector<uint32_t>& Database::GetSortedIndex(SortKey key) const{
     COVERAGE_BRANCH
+    DCHECK_F((uint32_t)key < (uint32_t)SortKey::MAXINDEX, "You cannot use values of SortKey::MAXINDEX or greater for a sort index. Its for iterating only!");
     return m_SortedIndices[(size_t)key];
+}
+
+
+nlohmann::json Database::GetFilteredList(const utmdata& query) const{
+    COVERAGE_BRANCH
+    DCHECK_F((uint32_t)query.sortstyle < (uint32_t)SortKey::MAXINDEX, "You cannot use values of SortKey::MAXINDEX or greater for a sort index. Its for iterating only!");
+    auto& list = m_SortedIndices[(size_t)query.sortstyle];
+    std::vector<nlohmann::json> jsonVector;
+    uint32_t count = 0;
+    for(auto index : list){
+        auto& entry = m_MasterList[index];
+        if (entry.DoesMatchString(query.filterrange)){
+            COVERAGE_BRANCH
+            jsonVector.push_back(entry.ToJSON());
+        }
+        COVERAGE_BRANCH_ELSE
+    }
+
+    return nlohmann::json{
+        {"count", jsonVector.size()},
+        {"results", nlohmann::json(jsonVector)}
+    };
 }
 
 
