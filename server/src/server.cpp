@@ -1,14 +1,23 @@
 #include "pch.hpp"
 #include "server.hpp"
+#include "database.hpp"
 
 int http_get_handler(short event, ad_conn_t *conn, void *userdata) {
     
-    ad_http_t *http = (ad_http_t *) ad_conn_get_extra(conn);
-    LOG_F(INFO, "URI: %s", http->request.uri);
 
     if (ad_http_get_status(conn) == AD_HTTP_REQ_DONE) {
+        ad_http_t *http = (ad_http_t *) ad_conn_get_extra(conn);
+        LOG_F(INFO, "URI: %s", http->request.uri);
         
-        ad_http_response(conn, 200, "text/html", "Hello World", 11);
+        //get the utm data
+        utmdata d(std::string(http->request.uri));
+        //get the reply json
+        auto json = Database::Get()->GetFilteredList(d);
+        std::stringstream ss;
+        ss << std::setw(4) << json << std::endl;
+        std::string response = ss.str();
+
+        ad_http_response(conn, 200, "text/json", response.data(), response.size()+1);
         return AD_DONE; // Keep connection alive.
     }
 

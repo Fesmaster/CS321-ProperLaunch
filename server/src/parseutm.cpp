@@ -34,7 +34,7 @@ utmdata::utmdata(const std::string& utmstr)
 		LOG_S(9) << "CONSTRUCTOR: " << utmstr;
 
 		/* vector and iterator for sort/filter types */ 
-		std::vector<std::string> strvec{"NAME", "DATE", "ROCKET", "PROVIDER", "MISSION", "PAD", "LOCATION"};
+		std::vector<std::string> strvec{"NAME", "DATE", "ROCKET", "PROVIDER", "MISSION", "PAD", "LOCATION", "MAXINDEX"};
 		std::vector<std::string>::iterator it;
 
 		/* Copy of UTM string */
@@ -76,6 +76,12 @@ utmdata::utmdata(const std::string& utmstr)
 				}
 				COVERAGE_BRANCH_ELSE
 			}
+
+			if (sortstyle == SortKey::MAXINDEX){
+				COVERAGE_BRANCH
+				sortstyle = SortKey::DATE;
+			}
+			COVERAGE_BRANCH_ELSE
 
 			if(it >= strvec.end()){
 				COVERAGE_BRANCH
