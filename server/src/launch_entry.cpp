@@ -1258,9 +1258,32 @@ void launch_entry_tests(){
     CHECK_EQ_F(str_tolower("nUmb3rs783"), "numb3rs783", "str_tolower() does not work as expected");
 
     CHECK_F(entry14.DoesMatchString("shepard"), "A launch entry that contains a string cannot find that string in it!");
+    CHECK_F(entry14.DoesMatchString("2022-05-31T13:30:00Z"), "A launch entry that contains a time cannot find that time in it!");
     CHECK_F(!entry14.DoesMatchString("not-present"), "A launch entry that does not contain a string found that string in it!");
 
+    CHECK_F(entry1->DoesFieldMatchString(SortKey::NAME, "Falcon 9"), "A launch entry that contains a string in a specific field cannot find it.");
+    CHECK_F(!entry1->DoesFieldMatchString(SortKey::NAME, "fulcon 5"), "A launch entry that does not contains a string in a specific field found it.");
     
+    CHECK_F(entry1->DoesFieldMatchString(SortKey::DATE, "2022-05-25T18:27:00Z"), "A launch entry that contains a string in a specific field cannot find it.");
+    CHECK_F(!entry1->DoesFieldMatchString(SortKey::DATE, "2022-06-25T18:27:00Z"), "A launch entry that does not contains a string in a specific field found it.");
+    
+    CHECK_F(entry1->DoesFieldMatchString(SortKey::PROVIDER, "Commercial"), "A launch entry that contains a string in a specific field cannot find it.");
+    CHECK_F(!entry1->DoesFieldMatchString(SortKey::PROVIDER, "government"), "A launch entry that does not contains a string in a specific field found it.");
+    
+    CHECK_F(entry1->DoesFieldMatchString(SortKey::ROCKET, "Block"), "A launch entry that contains a string in a specific field cannot find it.");
+    CHECK_F(!entry1->DoesFieldMatchString(SortKey::ROCKET, "Blue Origin"), "A launch entry that does not contains a string in a specific field found it.");
+    
+    CHECK_F(entry1->DoesFieldMatchString(SortKey::MISSION, "Transporter"), "A launch entry that contains a string in a specific field cannot find it.");
+    CHECK_F(!entry1->DoesFieldMatchString(SortKey::MISSION, "Transporter 6"), "A launch entry that does not contains a string in a specific field found it.");
+    
+    CHECK_F(entry1->DoesFieldMatchString(SortKey::PAD, "Complex 40"), "A launch entry that contains a string in a specific field cannot find it.");
+    CHECK_F(!entry1->DoesFieldMatchString(SortKey::PAD, "Spaaace!"), "A launch entry that does not contains a string in a specific field found it.");
+    
+    CHECK_F(entry1->DoesFieldMatchString(SortKey::LOCATION, "Cape Canaveral"), "A launch entry that contains a string in a specific field cannot find it.");
+    CHECK_F(!entry1->DoesFieldMatchString(SortKey::LOCATION, "Florida"), "A launch entry that does not contains a string in a specific field found it.");
+    
+
+
 
     LOG_S(INFO) << "LaunchEntry tests Complete";
 }

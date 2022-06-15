@@ -259,11 +259,22 @@ nlohmann::json Database::GetFilteredList(const utmdata& query) const{
     uint32_t count = 0;
     for(auto index : list){
         auto& entry = m_MasterList[index];
-        if (entry.DoesMatchString(query.filterrange)){
+        if (query.filterstyle == SortKey::MAXINDEX){
             COVERAGE_BRANCH
-            jsonVector.push_back(entry.ToJSON());
+            if (entry.DoesMatchString(query.filterrange)){
+                COVERAGE_BRANCH
+                jsonVector.push_back(entry.ToJSON());
+            }
+            COVERAGE_BRANCH_ELSE
         }
-        COVERAGE_BRANCH_ELSE
+        else{
+            COVERAGE_BRANCH
+            if (entry.DoesFieldMatchString(query.filterstyle, query.filterrange)){
+                COVERAGE_BRANCH
+                jsonVector.push_back(entry.ToJSON());
+            }
+            COVERAGE_BRANCH_ELSE
+        }
     }
 
     return nlohmann::json{
@@ -405,9 +416,11 @@ void database_tests(){
     auto results1 = db->GetFilteredList(d);
     CHECK_F( results1["count"] == 2, "Count was not correct for testing data filtered with \"Jeb\"! Did you remember to use the testing dataset (-p ./testubgdata,json)?");
 
+    d.filterstyle = SortKey::PROVIDER;
     d.filterrange = "Lowne Aerospace";
     auto results2 = db->GetFilteredList(d);
     CHECK_F( results2["count"] == 1, "Count was not correct for testing data filtered with \"Lowne Aerospace\"! Did you remember to use the testing dataset (-p ./testubgdata,json)?");
+
 
 
     LOG_S(INFO) << "Database Tests complete";
