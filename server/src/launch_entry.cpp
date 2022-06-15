@@ -2,6 +2,7 @@
 #include "launch_entry.hpp"
 #include "tests.hpp"
 
+
 std::string LaunchCodeToText(LaunchCode code){
     COVERAGE_BRANCH
     switch(code){
@@ -65,6 +66,15 @@ std::optional<LaunchEntry> LaunchEntry::CreateLaunchEntry(nlohmann::json json){
         else{
             COVERAGE_BRANCH
             LOG_S(WARNING) << "LaunchEntry url unable to import. Key is not in source.";
+        }
+
+        if (json["image"].is_string()){
+            COVERAGE_BRANCH
+            e.image_url = json["image"].get<std::string>();
+        }
+        else{
+            COVERAGE_BRANCH
+            LOG_S(WARNING) << "LaunchEntry image_url unable to import. Key is not in source.";
         }
 
         if (json["name"].is_string()){
@@ -402,6 +412,7 @@ nlohmann::json LaunchEntry::ToJSON() const{
         {"name", name},
         {"uid", uid},
         {"url", url},
+        {"image_url", image_url},
         {"status", {
             {"code", LaunchCodeToText(status.code)},
             {"description", status.description},
@@ -481,8 +492,109 @@ bool LaunchEntry::DoesMatchString(const std::string& other) const{
     }
     else{
         COVERAGE_BRANCH
-        //TODO Add date searching here
-        return false;
+        return DoesFieldMatchString(SortKey::DATE, other);
+    }
+}
+
+bool LaunchEntry::DoesFieldMatchString(SortKey field, const std::string& search) const{
+    COVERAGE_BRANCH
+    std::string lowerSearch = str_tolower(search);
+    switch(field){
+        case SortKey::NAME : {
+            COVERAGE_BRANCH
+            if (str_tolower(name).find(lowerSearch) != std::string::npos){
+                COVERAGE_BRANCH
+                return true;
+            }
+            else{
+                COVERAGE_BRANCH
+                return false;
+            }
+        }
+        case SortKey::ROCKET : {
+            COVERAGE_BRANCH
+            if ((str_tolower(rocket.name).find(lowerSearch) != std::string::npos) || 
+                (str_tolower(rocket.family).find(lowerSearch) != std::string::npos) || 
+                (str_tolower(rocket.variant).find(lowerSearch) != std::string::npos)
+            ){
+                COVERAGE_BRANCH
+                return true;
+            }
+            else{
+                COVERAGE_BRANCH
+                return false;
+            }
+        }
+        case SortKey::PROVIDER : {
+            COVERAGE_BRANCH
+            if ((str_tolower(provider.name).find(lowerSearch) != std::string::npos) || 
+                (str_tolower(provider.type).find(lowerSearch) != std::string::npos)
+            ){
+                COVERAGE_BRANCH
+                return true;
+            }
+            else{
+                COVERAGE_BRANCH
+                return false;
+            }
+        }
+        case SortKey::MISSION : {
+            COVERAGE_BRANCH
+            if ((str_tolower(mission.name).find(lowerSearch) != std::string::npos) || 
+                (str_tolower(mission.description).find(lowerSearch) != std::string::npos) || 
+                (str_tolower(mission.type).find(lowerSearch) != std::string::npos) || 
+                (str_tolower(mission.orbit_name).find(lowerSearch) != std::string::npos) || 
+                (str_tolower(mission.orbit_abbrev).find(lowerSearch) != std::string::npos)
+            ){
+                COVERAGE_BRANCH
+                return true;
+            }
+            else{
+                COVERAGE_BRANCH
+                return false;
+            }
+        }
+        case SortKey::PAD : {
+            COVERAGE_BRANCH
+            if (str_tolower(pad.name).find(lowerSearch) != std::string::npos){
+                COVERAGE_BRANCH
+                return true;
+            }
+            else{
+                COVERAGE_BRANCH
+                return false;
+            }
+        }
+        case SortKey::LOCATION : {
+            COVERAGE_BRANCH
+            if ((str_tolower(pad.location_name).find(lowerSearch) != std::string::npos) || 
+                (str_tolower(pad.location_country).find(lowerSearch) != std::string::npos)
+            ){
+                COVERAGE_BRANCH
+                return true;
+            }
+            else{
+                COVERAGE_BRANCH
+                return false;
+            }
+        }
+        case SortKey::DATE : {
+            COVERAGE_BRANCH
+            //the special one
+            DateTime d = TextToTime(search);
+            if (d <= status.window_end && d >= status.window_start){
+                COVERAGE_BRANCH
+                return true;
+            }
+            else{
+                COVERAGE_BRANCH
+                return false;
+            }
+        }
+        default: {
+            COVERAGE_BRANCH
+            return DoesMatchString(search);
+        }
     }
 }
 
@@ -612,11 +724,11 @@ location_country(std::move(other.location_country))
 {COVERAGE_BRANCH}
 
 LaunchEntry::LaunchEntry()
-: uid(""), name(""), url(""),
+: uid(""), name(""), url(""), image_url(""),
 status(), provider(), rocket(), mission(), pad() //these call the default constructors of those custom types
 {COVERAGE_BRANCH}
 LaunchEntry::LaunchEntry(const LaunchEntry& other)
-: uid(other.uid), name(other.name), url(other.url),
+: uid(other.uid), name(other.name), url(other.url), image_url(other.image_url),
 status(other.status), provider(other.provider), rocket(other.rocket),
 mission(other.mission), pad(other.pad)
 {COVERAGE_BRANCH}
@@ -625,6 +737,7 @@ LaunchEntry& LaunchEntry::operator=(const LaunchEntry& other){
     uid = other.uid;
     name = other.name;
     url = other.url;
+    image_url = other.image_url;
     status = other.status;
     provider = other.provider;
     rocket = other.rocket;
@@ -634,7 +747,7 @@ LaunchEntry& LaunchEntry::operator=(const LaunchEntry& other){
 }
 LaunchEntry::LaunchEntry(LaunchEntry&& other)
 : uid(std::move(other.uid)), name(std::move(other.name)), url(std::move(other.url)),
-status(std::move(other.status)), provider(std::move(other.provider)), 
+image_url(std::move(other.image_url)), status(std::move(other.status)), provider(std::move(other.provider)), 
 rocket(std::move(other.rocket)), mission(std::move(other.mission)), pad(std::move(other.pad))
 {COVERAGE_BRANCH}
 
@@ -1146,6 +1259,8 @@ void launch_entry_tests(){
 
     CHECK_F(entry14.DoesMatchString("shepard"), "A launch entry that contains a string cannot find that string in it!");
     CHECK_F(!entry14.DoesMatchString("not-present"), "A launch entry that does not contain a string found that string in it!");
+
+    
 
     LOG_S(INFO) << "LaunchEntry tests Complete";
 }

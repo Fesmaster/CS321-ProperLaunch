@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#include "parseutm.hpp"
 
 using DateTime = std::chrono::time_point<std::chrono::system_clock>;
 //helper functions for converting date-time string to and from DateTime objects
@@ -93,6 +94,7 @@ struct LaunchEntry{
     std::string uid;
     std::string name;
     std::string url;
+    std::string image_url;
     LaunchStatus status;
     LaunchProvider provider;
     LaunchVessel rocket;
@@ -121,6 +123,11 @@ struct LaunchEntry{
     Search this object for the string. Returns true if it can be found, false otherwise
     */
     bool DoesMatchString(const std::string& other) const;
+
+    /*
+    Search this object for the string, but only in the areas of the specific field.
+    */
+    bool DoesFieldMatchString(SortKey field, const std::string& search) const;
 };
 
 #ifdef TESTS_ENABLED
