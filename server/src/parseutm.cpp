@@ -1,6 +1,6 @@
-#include "pch.hpp"
+#include "include/pch.hpp"
 #include <regex>
-#include "parseutm.hpp"
+#include "include/parseutm.hpp"
 #include "tests.hpp"
 
 /*
@@ -14,7 +14,10 @@
  * Absence of both a sort and filter will result in a default sort type and no filter type 
  *
  * '&' is used to mark the end of a sort, filter, and range key if they are not at the end of the string
- * '&' and '%' can not be entered as a search characters on their own so '%1' has to be used for '&' and '%2' for '%'
+ *
+ * Escape sequences 
+ * '&' - %1
+ * '%' - %2
  *
  * sort/filter statements and keys are case insensitive
  * the filter range statement is case insensitive and its key is a string taken literally, including a blank string
@@ -65,6 +68,12 @@ utmdata::utmdata(const std::string& utmstr)
 			/* change to upper case */
 			transform(strres.begin(), strres.end(), strres.begin(), ::toupper);
 
+			if(strres == "")
+			{
+				LOG_S(1) << "Sort style empty";
+			}
+			else
+			{
 			for(it = strvec.begin(), j=0; it < strvec.end(); it++, j++){
 				if(strres == *it){
 					COVERAGE_BRANCH
@@ -88,6 +97,7 @@ utmdata::utmdata(const std::string& utmstr)
 				LOG_S(1) << "No sort type match found in list for " << strres;
 			}
 			COVERAGE_BRANCH_ELSE
+			}
 
 		}
 		else{
@@ -118,40 +128,80 @@ utmdata::utmdata(const std::string& utmstr)
 			/* uppercase */
 			transform(strres2.begin(), strres2.end(), strres2.begin(), ::toupper);
 
-			for(j = 0, it = strvec.begin(); it < strvec.end(); it++, j++){
-				if(strres2 == *it){
-					COVERAGE_BRANCH
-					filterstyle = (SortKey)j;
-					break;
+			if(strres2 == "")
+			{
+				LOG_S(2) << "Filter type empty";
+			}
+			else
+			{
+				for(j = 0, it = strvec.begin(); it < strvec.end(); it++, j++){
+					if(strres2 == *it){
+						COVERAGE_BRANCH
+							filterstyle = (SortKey)j;
+						break;
+					}
+					COVERAGE_BRANCH_ELSE
 				}
-				COVERAGE_BRANCH_ELSE
-			}
-			if(it == strvec.end()){
-				COVERAGE_BRANCH
-				/* log: no match to SortKey enum */
-				LOG_S(1) << "No filter type match found in list for " << strres2;
-			}
-			else{
-				COVERAGE_BRANCH
-				/* log: set filterstyle */
-				LOG_S(2) << "Filter type match found in list for " << strres2 << "\nSet filterstyle key: " << j;
+				if(it == strvec.end()){
+					COVERAGE_BRANCH
+						/* log: no match to SortKey enum */
+						LOG_S(1) << "No filter type match found in list for " << strres2;
+				}
+				else{
+					COVERAGE_BRANCH
+						/* log: set filterstyle */
+						LOG_S(2) << "Filter type match found in list for " << strres2 << "\nSet filterstyle key: " << j;
 
-				/* regex pattern for range=<range> */
-				std::regex_search(strres, sm, std::regex("(?=range=).*?(?=(&|$))"));
+					/* regex pattern for range=<range> */
+					std::regex_search(strres, sm, std::regex("(?=range=).*?(?=(&|$))"));
 
-				strres2 = sm.str();
+					strres2 = sm.str();
 
-				/* retrieve range */
-				strres2 = strres2.substr(strres2.find("=")+1);
+					/* retrieve range */
+					strres2 = strres2.substr(strres2.find("=")+1);
 
-				/* replace escape patterns */
-				strres2 = std::regex_replace(strres2, std::regex("%1"), "&");
-				strres2 = std::regex_replace(strres2, std::regex("%2"), "%");
+					/* replace escape patterns */
+					strres2 = std::regex_replace(strres2, std::regex("%1"), "&");
+					strres2 = std::regex_replace(strres2, std::regex("%2"), "%");
 
-				filterrange += strres2;
+					/* official URL escape patterns if needed */
+					/*
+					strres2 = std::regex_replace(strres2, std::regex("%26"), "&");
+					strres2 = std::regex_replace(strres2, std::regex("%25"), "%");
+					strres2 = std::regex_replace(strres2, std::regex("%24"), "$");
+					strres2 = std::regex_replace(strres2, std::regex("%3D"), "=");
+					strres2 = std::regex_replace(strres2, std::regex("%40"), "@");
+					strres2 = std::regex_replace(strres2, std::regex("%3A"), ":");
+					strres2 = std::regex_replace(strres2, std::regex("%3F"), "\?");
+					strres2 = std::regex_replace(strres2, std::regex("%2F"), "/");
+					strres2 = std::regex_replace(strres2, std::regex("%3B"), ";");
+					strres2 = std::regex_replace(strres2, std::regex("%60"), "\'");
+					strres2 = std::regex_replace(strres2, std::regex("%5D"), "]");
+					strres2 = std::regex_replace(strres2, std::regex("%5B"), "[");
+					strres2 = std::regex_replace(strres2, std::regex("%7E"), "~");
+					strres2 = std::regex_replace(strres2, std::regex("%5E"), "^");
+					strres2 = std::regex_replace(strres2, std::regex("%5C"), "\\");
+					strres2 = std::regex_replace(strres2, std::regex("%7C"), "|");
+					strres2 = std::regex_replace(strres2, std::regex("%7D"), "}");
+					strres2 = std::regex_replace(strres2, std::regex("%7B"), "{");
+					strres2 = std::regex_replace(strres2, std::regex("%2B"), "+");
+					strres2 = std::regex_replace(strres2, std::regex("%23"), "#");
+					strres2 = std::regex_replace(strres2, std::regex("%3E"), ">");
+					strres2 = std::regex_replace(strres2, std::regex("%3C"), "<");
+					strres2 = std::regex_replace(strres2, std::regex("%20"), " ");
+					*/
 
-				/* log: set filterrange to string */
-				LOG_S(2) << "Set filterrange: " << strres2;
+					filterrange += strres2;
+
+					if(strres2 == "")
+					{
+						LOG_S(2) << "Filter range empty";
+					}
+					else /* log: set filterrange to string */
+					{
+						LOG_S(2) << "Set filterrange: " << strres2;
+					}
+				}
 			}
 
 		}
