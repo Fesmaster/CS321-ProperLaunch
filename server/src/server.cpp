@@ -8,16 +8,20 @@ int http_get_handler(short event, ad_conn_t *conn, void *userdata) {
     if (ad_http_get_status(conn) == AD_HTTP_REQ_DONE) {
         ad_http_t *http = (ad_http_t *) ad_conn_get_extra(conn);
         LOG_F(INFO, "URI: %s", http->request.uri);
-        
+        Database* db = Database::Get();
+        db->WaitDatabaseUpdate();
+
         //get the utm data
         utmdata d(std::string(http->request.uri));
         //get the reply json
-        auto json = Database::Get()->GetFilteredList(d);
+        auto json = db->GetFilteredList(d);
         std::stringstream ss;
         ss << std::setw(4) << json << std::endl;
         std::string response = ss.str();
 
         ad_http_response(conn, 200, "text/json", response.data(), response.size()+1);
+        
+        db->CheckDatabaseUpdate();
         return AD_DONE; // Keep connection alive.
     }
 

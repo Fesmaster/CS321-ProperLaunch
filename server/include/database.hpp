@@ -47,6 +47,16 @@ public:
     TESTING ONLY, to REMOVE. Or, use as template for functions that will reply when the server is queried.
     */
     std::string DumpMasterListJSON();
+
+    /*
+    Check if the database needs to be updated, and run that asyncronously
+    */
+    void CheckDatabaseUpdate();
+
+    /*
+    wait for any database updates to complete.
+    */
+    void WaitDatabaseUpdate();
     
     //function deletion (to maintain singleton status)
     Database(const Database& other) = delete;
@@ -57,11 +67,15 @@ private:
     
     //private constructor
     Database(const std::string& path);
+
+    void UpdateData();
     
 
     std::string m_Path;
     std::vector<LaunchEntry> m_MasterList;
     std::array<std::vector<uint32_t>, (size_t)SortKey::MAXINDEX> m_SortedIndices; 
+    DateTime lastUpdate;
+    std::future<void> updateResult;
 };
 
 

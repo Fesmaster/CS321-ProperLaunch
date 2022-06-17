@@ -155,7 +155,7 @@ Database::Database(const std::string& path)
             //this line must use std::move to ensure no copying of the entry.
             m_MasterList.push_back(std::move(*entry));
         }
-        COVERAGE_BRANCH_ELSE //This one will likely never be run. It is nesecary because it is part of the data parsing system.
+        COVERAGE_NEVER_ELSE //This one will likely never be run. It is nesecary because it is part of the data parsing system.
     }
     
     //make sorted lists
@@ -207,6 +207,8 @@ Database::Database(const std::string& path)
         m_SortedIndices[(uint32_t)SortKey::LOCATION].end(),
         location_compare{m_MasterList}
     );
+
+    lastUpdate = std::chrono::system_clock::now();
 }
 
 Database* Database::Get(){
@@ -298,6 +300,109 @@ std::string Database::DumpMasterListJSON(){
     ss << jsonList.dump(4);
     return ss.str();
 }
+
+
+void Database::CheckDatabaseUpdate(){
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(
+        std::chrono::system_clock::now() - lastUpdate
+    );
+    if (minutes.count() > 30){
+        LOG_S(INFO) << "Scheduling Async Database update";
+        updateResult = std::async(std::launch::async, [](){
+            LOG_S(INFO) << "Performing Async Database update";
+            Database* db = Database::Get();
+            db->UpdateData();
+            db->lastUpdate = std::chrono::system_clock::now();
+            LOG_S(INFO) << "Completing Async Database update";
+        });
+    }
+}
+
+
+void Database::UpdateData(){
+    //load the file
+    std::ifstream databaseFile(m_Path, std::ios::in);
+    //this error message is intentionally NOT debug-mode only
+    CHECK_F(databaseFile.is_open(), "ERROR: Unable to open the database file.");
+
+    //read into JSON
+    nlohmann::json importedJSON;
+    databaseFile >> importedJSON;
+    
+    databaseFile.close();
+
+    //parse the JSON array
+    CHECK_F(importedJSON.is_object(), "JSON Database file is in an invalid format.");
+    CHECK_F(importedJSON["results"].is_array(), "JSON Database file is in an invalid format.");
+    
+    for(auto jsonLaunchData : importedJSON["results"]){
+        auto entry = LaunchEntry::CreateLaunchEntry(jsonLaunchData);
+        if (entry){
+            //this line must use std::move to ensure no copying of the entry.
+            m_MasterList.push_back(std::move(*entry));
+        }
+    }
+    
+    //make sorted lists
+    
+    //for each possible sort list, fill with std::iota
+    for (uint32_t i=0; i<(uint32_t)SortKey::MAXINDEX;i++){
+        m_SortedIndices[i].resize(m_MasterList.size(), 0);
+        std::iota(m_SortedIndices[i].begin(), m_SortedIndices[i].end(), 0);
+    }
+
+    std::stable_sort(
+        m_SortedIndices[(uint32_t)SortKey::NAME].begin(), 
+        m_SortedIndices[(uint32_t)SortKey::NAME].end(),
+        name_compare{m_MasterList}
+    );
+
+    std::stable_sort(
+        m_SortedIndices[(uint32_t)SortKey::DATE].begin(), 
+        m_SortedIndices[(uint32_t)SortKey::DATE].end(),
+        date_compare{m_MasterList}
+    );
+
+    std::stable_sort(
+        m_SortedIndices[(uint32_t)SortKey::ROCKET].begin(), 
+        m_SortedIndices[(uint32_t)SortKey::ROCKET].end(),
+        rocket_compare{m_MasterList}
+    );
+
+    std::stable_sort(
+        m_SortedIndices[(uint32_t)SortKey::PROVIDER].begin(), 
+        m_SortedIndices[(uint32_t)SortKey::PROVIDER].end(),
+        provider_compare{m_MasterList}
+    );
+
+    std::stable_sort(
+        m_SortedIndices[(uint32_t)SortKey::MISSION].begin(), 
+        m_SortedIndices[(uint32_t)SortKey::MISSION].end(),
+        mission_compare{m_MasterList}
+    );
+
+    std::stable_sort(
+        m_SortedIndices[(uint32_t)SortKey::PAD].begin(), 
+        m_SortedIndices[(uint32_t)SortKey::PAD].end(),
+        pad_compare{m_MasterList}
+    );
+
+    std::stable_sort(
+        m_SortedIndices[(uint32_t)SortKey::LOCATION].begin(), 
+        m_SortedIndices[(uint32_t)SortKey::LOCATION].end(),
+        location_compare{m_MasterList}
+    );
+}
+
+
+void Database::WaitDatabaseUpdate(){
+    if (updateResult.valid()){
+        updateResult.wait();
+        LOG_S(INFO) << "Async Database update wait completed";
+    }
+    return;
+}
+
 
 
 #ifdef TESTS_ENABLED
