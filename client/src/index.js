@@ -4,5 +4,11 @@ button.addEventListener('click', () => {
 });
 
 function createBrowserWindow() {
-  window.open("alarm.html", "_blank", "width=250,height=200");
+  window.open("alarm.html", "_blank", "width=300,height=200");
+}
+
+function activateAlarm(timeDifference) {
+
+  setTimeout(() => { alert('Launch time approaching!'); }, timeDifference);
+
 }

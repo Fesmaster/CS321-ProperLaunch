@@ -5,7 +5,8 @@ closebtn.addEventListener('click', function (event) {
     var window = remote.getCurrentWindow();
     window.close()
 })
-
+var alarmSound = new Audio();
+alarmSound.src ='../images/alarm.wav';
 
 function setAlarm() {
     var ms = document.getElementById("alarmTime").valueAsNumber;
@@ -13,12 +14,14 @@ function setAlarm() {
     var alarmTime = new Date(alarm.getUTCFullYear(), alarm.getUTCMonth(), alarm.getUTCDate(), alarm.getUTCHours(), alarm.getUTCMinutes(), alarm.getUTCSeconds());
     var timeDifference = alarmTime.getTime() - (new Date()).getTime();
     if (timeDifference < 0) {
-        alert('Time already passed');
+        alert('The time has already passed.');
         return;
     }
-    setTimeout(() => activateAlarm(), timeDifference);
+
+    window.opener.activateAlarm(timeDifference);
     alert('Alarm set successfully');
 }
 function activateAlarm() {
-    alert('It is time!');
+    alarmSound.play();
+    alert('Launch time approaching!');
 }

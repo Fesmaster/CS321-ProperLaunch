@@ -73,8 +73,8 @@
 											callback(httpreq.responseText);
 									}
 
-									httpreq('GET', urlstr, true);
-									httpreq.sent(null);
+									httpreq.open('GET', urlstr, true);
+									httpreq.send(null);
 								}
 				-->
 			</script>

@@ -9,7 +9,7 @@
 </head>
 
 <body class="bg-img text-gray-600 font-serif">
-  <div class="grid md:grid-cols-3">
+  <div class="grid md:grid-cols-4">
     <div class="bg-slate-300 md:col-span-1 md:flex md:justify-end">
       <nav class="text-right pt-5">
         <div class="flex justify-between items-center">
@@ -25,7 +25,7 @@
         </div>
         <ul class="text-sm mt-6">
           <li class="text-gray-700 py-1">
-            <a href="index.html" class="px-4 flex justify-end border-r-4 border-red" id="home">
+            <a href="index.html" class="px-4 flex justify-end border-r-4 border-red-200" id="home">
               <span> Home</span>
               <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg">
@@ -62,16 +62,18 @@
         </ul>
       </nav>
     </div>
-    <main class="px-16 py-16 bg-gray-100 md:col-span-2">
+    <main class="px-16 py-16 bg-gray-100 md:col-span-3">
       <div class="flex justify-center md:justify-end ml-2 gap-1">
         <!-- <label for="search" class="pt-3 hover:text-gray-700"> Search</label> -->
         <form onsubmit="SearchTerm(event)" id="search-form">
           <input  type="search" name="search-term" placeholder="Search" id="search">
-          <svg class="w-8 h-8 inline-block pt-3 " fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
+          <button type="submit">  
+            <svg class="w-8 h-8 inline-block pt-3 " fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
         </form>
       </div>
       <header>

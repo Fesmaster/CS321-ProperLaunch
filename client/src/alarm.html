@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<title>Alarm</title>
+  <title>Alarm</title>
 </head>
 
 <body>
-<div class="setAlarm">
-    <p id="alarmClock"><b>Set Alarm</b></p>
-    <input type="datetime-local" id="alarmTime" />
-    <button onclick="setAlarm();" id="alarmSetter">Set</button></button>
+  <div class="setAlarm">
+    <h2 class="flex justify-center text-stone-800" id="alarmClock">Set Alarm</h2>
+    <input type="datetime-local" id="alarmTime">
+    <button class="focus:ring" onclick="setAlarm();" id="alarmSetter">Set Alarm</button>
+    <div id="alarmOptions" style="display:none">
+    <button class="focus:ring" onclick="snooze();" id="alarmSetter">Snooze</button>
+    <button class="focus:ring" onclick="stopAlarm();" id="alarmSetter">Stop Alarm</button>
   </div>
-  <button id="closebtn">Close Window</button><br>
+  </div>
+  <div>
+  <button class="focus:ring" onclick="window.close()" id="closebtn">Close Window</button></div>
   <script src="js/alarm.js"></script>
 </body>
 
