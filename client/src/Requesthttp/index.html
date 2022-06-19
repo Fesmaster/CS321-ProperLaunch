@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<HTML>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initialscale=1.0">
+		<title>Rocket Search</title>
+		<link rel="stylesheet" href="rocketquery.css">
+	</head>
+	<body>
+			<!-- In progress
+				will generate a string for the query and display it below in the HTML page 
+				
+				For example: enterurlhere.com/?filter=NAME&range=Apollo13&sort=DATE&
+
+				The enterurlhere.com/ part will need to be entered in the URL Origin input
+			-->
+			<!-- URL Origin    To enter URL origin of server including the slash, the part without sort or filter statements at the end, the '?' that follows is added automatically-->
+			<input placeholder="Enter URL origin with slash" name="urlb" id="urlb">
+			<p>
+			For example: enterurlhere.com/ &nbsp;&larr;this part in &darr;<br><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enterurlhere.com/?filter=NAME&amp;range=Apollo13&amp;sort=DATE&amp;
+  
+			<!-- Radios for user to click-->
+			<form id="quru">
+				<p>FILTER</p>
+				<div class="filter">
+					<input type="radio" name="filter" id="none" value="" checked>NONE<br>
+					<input type="radio" name="filter" id="name" value="NAME">NAME<br>
+					<input type="radio" name="filter" id="date" value="DATE">DATE<br>
+					<input type="radio" name="filter" id="rocket" value="ROCKET">ROCKET<br>
+					<input type="radio" name="filter" id="provider" value="PROVIDER">PROVIDER<br>
+					<input type="radio" name="filter" id="mission" value="MISSION">MISSION<br>
+					<input type="radio" name="filter" id="pad" value="PAD">PAD<br>
+					<input type="radio" name="filter" id="location" value="LOCATION">LOCATION<br><br>
+					RANGE
+					<input type="text" name="range" id="range"> 
+				</div>
+
+				<p>SORT</p>
+				<div class="sort">
+					<input type="radio" name="sort" id="name" value="NAME">NAME<br>
+					<input type="radio" name="sort" id="date" value="DATE" checked>DATE<br>
+					<input type="radio" name="sort" id="rocket" value="ROCKET">ROCKET<br>
+					<input type="radio" name="sort" id="provider" value="PROVIDER">PROVIDER<br>
+					<input type="radio" name="sort" id="mission" value="MISSION">MISSION<br>
+					<input type="radio" name="sort" id="pad" value="PAD">PAD<br>
+					<input type="radio" name="sort" id="location" value="LOCATION">LOCATION<br>
+				</div>
+				<button type="submit">Submit</button>
+			</form>
+
+			<!-- output to HTML page to test -->
+			<pre id="log">
+			<pre id="log1">
+
+			<script>
+				var urlor = "";
+				const urlb = document.getElementById("urlb");
+				urlb.addEventListener('input', function(event) {
+									urlor = event.target.value;
+								}, false);
+
+				const quru = document.getElementById("quru");
+				const log = document.getElementById("log");
+				const log1 = document.getElementById("log1");
+
+				quru.addEventListener("submit", function(event) {
+									const data = new FormData(quru);
+									var querystr = "";
+									querystr = urlor + '?';
+									for (const entry of data) {
+											querystr = querystr + entry[0] + "=" + entry[1].replaceAll("%", "%2").replaceAll("&", "%1") + "&";
+									};
+									querystr = querystr.slice(0, -1);
+									/* Output to HTML page to test before poll to server is finished */
+									log.innerText = querystr;
+									event.preventDefault();
+
+									
+									/* request */
+										const xhr = new XMLHttpRequest();
+										xhr.open('GET', querystr);
+										xhr.responseType = 'json';
+										xhr.onload = () => {
+											var rocketj = xhr.response;
+											disrockets(rocketj);
+										};
+										xhr.send();
+								
+								}, false);
+
+
+				function disrockets(rocketj){
+						for(let i=0; i<rocketj.length; i++)
+						{
+							var key=i;
+							var a=document.createElement('a');
+							a.href=key;
+							a.name = "rocketlink";
+							a.innerHTML=rocketj[i].name;
+							document.body.appendChild(a);
+							document.body.appendChild(document.createElement("br"));
+						}
+						var hyperlinks=document.getElementsByTagName('a');
+						for(i=0;i<hyperlinks.length;i++)
+						{
+							/*print json when clicked*/
+							hyperlinks[i].onclick=function(e){
+								e.preventDefault();
+								var href=this.getAttribute('href');
+
+								/*remove buttons
+								hyperr = document.getElementsByName("rocketlink");
+								var endi = hyperr.length;
+								for(i=0;i<endi;i++)
+								{
+									document.body.removeChild(hyperr[0]);
+								}
+			       					*/
+								rockj = rocketj[href];
+								spejs = Object.keys(rockj);
+
+								spejs.forEach(function(key){
+													log1.innerHTML += key + ": " + rockj[key] + "<br>";
+												})
+								window.open('selectedrocket.html');
+							}
+						}
+				}
+
+							</script>
+	</body>
+</HTML>

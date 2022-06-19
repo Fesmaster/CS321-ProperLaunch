@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initialscale=1.0">
+		<title>Rocket Search</title>
+		<link rel="stylesheet" href="rocketquery.css">
+
+	</head>
+	<body>
+		<p id="log1"></p>
+		<script>
+			const log1 = document.getElementById("log1");
+			var jdat = window.opener.spejs;
+			var rockj = window.opener.rockj;
+			log1.innterHTML += "<br>";
+				jdat.forEach(function(key){
+					log1.innerHTML += key + ": " + rockj[key] + "<br>";
+				})
+
+		</script>
+	</body>
+</html>
