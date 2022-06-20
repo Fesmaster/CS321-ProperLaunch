@@ -37,7 +37,7 @@
             </a>
           </li>
           <li class="py-1">
-            <a href="upcoming.html" class="px-4 flex justify-end border-r-4 border-white" id="upcoming">
+            <!--<a href="upcoming.html" class="px-4 flex justify-end border-r-4 border-white" id="upcoming">
               <span>Upcoming Launches</span>
               <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg">
@@ -47,6 +47,8 @@
               </svg>
 
             </a>
+          -->
+          <a href="javascript:renderUpcomingLaunch()"> Upcoming Launches</a>
           </li>
           <li class="py-1">
             <a class="px-4 flex justify-end border-r-4 border-white cursor-pointer" id="alarm">
@@ -85,8 +87,9 @@
           <h4 class="font-bold mt-12 pb-2 border-b border-gray-200">Explore</h4>
           <div class="ml-5 mt-10">
             <div class="f">
-              <label for="filtering">Filter By</label>
-              <select name="filters" id="filterBy" onchange="filterRocket()">
+              <label for="filtering">Sort By</label>
+              <select name="filters" id="filterBy" onchange="filterBy(this.options[this.selectedIndex].value)">
+                <option value="disabled">Select</option>
                 <option value="Name">Name</option>
                 <option value="Date">Date</option>
                 <option value="Rocket">Rocket</option>
@@ -94,36 +97,20 @@
                 <option value="Mission">Mission</option>
                 <option value="Pad">Pad</option>
                 <option value="Location">Location</option>
+                <option value="MaxIndex">MaxIndex</option>
+              </select>
+            </div>
+            <div class="f">
+              <label for="ordering">Order By</label>
+              <select name="order" id="orderBy" onchange="orderBy(this.options[this.selectedIndex].value)">
+                <option value="orderByDesc">Descending</option>
+                <option value="orderByAsc">Ascending</option>
+
               </select>
             </div>
           </div>
         </div>
-        <div class="mt-8 grid grid-cols-3 gap-10">
-          <div class="bg-white rounded overflow-hidden shadow-md">
-            <img src="./images/colombia.jpeg" alt="colombia" class="object-scale-down h-30 w-15">
-            <div class="m-4">
-              <span class="font-bold">Columbia's STS-4 <footer></footer></span>
-              <span class="block font-semibold">March 2,2021</span>
-              <span class="block font-semibold">Kennedy Space Center, Florida, USA</span>
-            </div>
-          </div>
-          <div class="bg-white rounded overflow-hidden shadow-md">
-            <img src="./images/delta.jpeg" alt="delta" class="object-scale-down h-15 w-15">
-            <div class="m-4">
-              <span class="font-bold">Delta-IV Heavy <footer></footer></span>
-              <span class="block font-semibold">August 12, 2018</span>
-              <span class="block font-semibold">Cape Canaveral, United States</span>
-            </div>
-          </div>
-          <div class="bg-white rounded overflow-hidden shadow-md">
-            <img src="./images/falcon9.jpeg" alt="Falcon Heavy on the launchpad" class="object-scale-down w-30 h-15">
-            <div class="m-4">
-              <span class="font-bold">SpaceX Falcon 9 <footer></footer></span>
-              <span class="block font-semibold">February 1, 2020</span>
-              <span class="block font-semibold">Cape Canaveral Air Force Station, FL, USA
-              </span>
-            </div>
-          </div>
+        <div id="launches-container" class="mt-8 grid grid-cols-3 gap-10">
         </div>
         <div class="flex justify-center pt-12">
           <div class="bg-blue-300 rounded-full py-2 px-3 uppercase text-xs font-bold cursor-pointer tracking-wider">Load
@@ -132,36 +119,51 @@
       </div>
     </main>
   </div>
-
+  <script src="../render.js"></script>
   <script>
+    window.onload = function () {
+      renderGrid("http://44.203.158.19:8888/?sort=Name", false, "launches-container");
 
-    var searchForm = document.getElementById("search-form");
+    }
+    //var searchForm = document.getElementById("search-form");
 
     function SearchTerm(event) {
       event.preventDefault();
+      var searchTerm = document.getElementById("search").value;
+      var selectedFilter = document.getElementById("filterBy").value;
+      selectedFilter = selectedFilter.toUpperCase();
+      // var xyz = "http://44.203.158.19:8888/?filter="+selectedFilter+"&range="+searchTerm;
+      // var xyz = "http://44.203.158.19:8888/?filter=MAXINDEX&range=" + searchTerm;
+      renderGrid("http://44.203.158.19:8888/?filter=MAXINDEX&range=" + searchTerm, false, "launches-container");
 
-      const searchValue = event.target["search-term"].value;
-      window.location = `rendered.html?q=${searchValue}`;
+      //populateContainer();
+      //window.location = `rendered.html?q=${searchValue}`;
     }
-    function filterRocket() {
-      console.log(document.getElementById("filterBy").value);
-      if (document.getElementById("filterBy").value === "Name") {
-        var name = "hiwot";
-        console.log(name);
+
+    function filterBy(selectedFilter) {
+      selectedFilter = selectedFilter.toUpperCase();
+      renderGrid("http://44.203.158.19:8888/?sort=" + selectedFilter, false, "launches-container");
+
+    }
+    function orderBy(order) {
+      var selectedFilter = document.getElementById("filterBy").value;
+      selectedFilter = selectedFilter.toUpperCase();
+      if (order === "orderByAsc") {
+        renderGrid("http://44.203.158.19:8888/?sort=" + selectedFilter, true, "launches-container");
+      }
+      else {
+        renderGrid("http://44.203.158.19:8888/?sort=" + selectedFilter, false, "launches-container");
 
       }
-      var req = new XMLHttpRequest();
-      req.overrideMimeType("application/json");
-      req.open('GET', "http://44.203.158.19:8080/", true);
-      req.setRequestHeader("Access-Control-Allow-Origin", "*");
-      req.onload = function () {
-        var jsonResponse = JSON.parse(req.responseText);
-        // do something with jsonResponse
-      };
-      req.send();
+    }
+    function renderUpcomingLaunch(){
+      var selectedFilter = document.getElementById("filterBy").value;
+      renderGrid("http://44.203.158.19:8888/?filter=MAXINDEX", false, "launches-container", true);
+
+      //renderGrid("http://44.203.158.19:8888/?sort=" + selectedFilter, false, "launches-container", true);
+
     }
   </script>
-
   <script src="./index.js"></script>
 </body>
 

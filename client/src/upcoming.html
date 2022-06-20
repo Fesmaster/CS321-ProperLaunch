@@ -80,26 +80,29 @@
         <h2 class="text-gray-700 text-3xl font-semibold">Rocket Launches</h2>
         <h3 class="text-2xl font-semibold">For enthusiasts</h3>
       </header>
-      <div class="inline-flex"> 
+      <div class="inline-flex">
         <h4 class="font-bold mt-12 pb-2 border-b border-gray-200">Upcoming Launches</h4>
         <div class="ml-5 mt-10">
-        <label for="sorting">Sort By</label>
-        <select name="sort" id="sort">
-          <option value="" disabled selected>Select</option>
-          <option value="Ascending">Ascending</option>
-          <option value="Descending">Descending</option>
-        </select>
+          <label for="sorting">Sort By</label>
+          <select name="sort" id="sort">
+            <option value="" disabled selected>Select</option>
+            <option value="Ascending">Ascending</option>
+            <option value="Descending">Descending</option>
+          </select>
+        </div>
       </div>
-      </div>
-        <div id="launches-container" class="mt-8 grid grid-cols-3 gap-10">
+      <div id="upcomingLaunches-container" class="mt-8 grid grid-cols-3 gap-10">
 
-        
+
       </div>
     </main>
   </div>
 
   <script>
+    window.onload = function () {
+      renderGrid("http://44.203.158.19:8888/?sort=Name", false, "upcomingLaunches-container", true);
 
+    }
     var searchForm = document.getElementById("search-form");
 
     function SearchTerm(event) {
@@ -111,7 +114,7 @@
 
   </script>
   <script src="./index.js"></script>
-  <script src="../upcoming.js"></script>
+  <script src="../render.js"></script>
 </body>
 
 </html>
