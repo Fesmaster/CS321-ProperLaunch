@@ -6,7 +6,19 @@ function httpGet(url) {
     return xmlHttpReq.responseText;
 }
 var data = "";
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
 
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
 function renderGrid(url, reverse, containerId, isForUpcoming) {
     var jsonRawData = httpGet(url);
     jsonRawData = jsonRawData.slice(0, -1);
@@ -15,6 +27,7 @@ function renderGrid(url, reverse, containerId, isForUpcoming) {
     console.log(jsonRawData);
     populateContainer(reverse, containerId, isForUpcoming);
 }
+
 function populateContainer(reverse, containerId, isForUpcoming) {
     document.getElementById(containerId).innerHTML = "";
 
@@ -38,7 +51,10 @@ function populateContainer(reverse, containerId, isForUpcoming) {
         //if (myJson.toLowerCase().includes(getQuery().toLowerCase())) {
         var itemCard = document.createElement("div");
 
-
+        var startDate = launchesData[launch]["status"]["window_start"];
+        startDate = formatDate(startDate);
+        var endDate = launchesData[launch]["status"]["window_start"];
+        endDate = formatDate(endDate);
         itemCard.className = "bg-white rounded overflow-hidden shadow-md";
 
         try {
@@ -47,8 +63,8 @@ function populateContainer(reverse, containerId, isForUpcoming) {
                 <div class="m-4">
                     <span class="font-bold">${launchesData[launch]["name"]} <footer></footer></span>
                     <span class="block font-semibold  text-sm">Rocket Name: ${launchesData[launch]["rocket"]["name"] || "Undefined"}</span>
-                    <span class="block font-semibold  text-sm">Start Date: ${launchesData[launch]["status"]["window_start"] || "Undefined"}</span>
-                    <span class="block font-semibold  text-sm">End Date: ${launchesData[launch]["status"]["window_end"] || "Undefined"}</span>
+                    <span class="block font-semibold  text-sm">Start Date: ${startDate || "Undefined"}</span>
+                    <span class="block font-semibold  text-sm">End Date: ${ endDate|| "Undefined"}</span>
                     <span class="block font-semibold  text-sm">Agency Name: ${launchesData[launch]["provider"]["name"] || "Undefined"}</span>
                     <span class="block font-semibold  text-sm">Launchpad Name: ${launchesData[launch]["pad"]["name"] || "Undefined"}</span>
                     <span class="block font-semibold  text-sm">Location: ${launchesData[launch]["pad"]["location"]["name"] || "Undefined"}</span>
@@ -84,7 +100,6 @@ function getQuery() {
     document.title = usernameParam;
     return usernameParam;
 }
-
 
     //console.log(launchesData[launch]["name"].toLowerCase(), getQuery().toLowerCase())
 

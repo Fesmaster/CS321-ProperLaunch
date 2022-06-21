@@ -8,7 +8,12 @@ function createBrowserWindow() {
 }
 
 function activateAlarm(timeDifference) {
-
-  setTimeout(() => { alert('Launch time approaching!'); }, timeDifference);
-
+ 
+  setTimeout(() => {
+    document.getElementById('alarmId').play();  
+    return;
+  }, timeDifference);
+  setTimeout(() => {
+    alert('Launching time approaching!');
+  }, timeDifference);
 }

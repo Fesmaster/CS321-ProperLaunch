@@ -5,8 +5,7 @@ closebtn.addEventListener('click', function (event) {
     var window = remote.getCurrentWindow();
     window.close()
 })
-var alarmSound = new Audio();
-alarmSound.src ='../images/alarm.wav';
+
 
 function setAlarm() {
     var ms = document.getElementById("alarmTime").valueAsNumber;
@@ -22,6 +21,7 @@ function setAlarm() {
     alert('Alarm set successfully');
 }
 function activateAlarm() {
-    alarmSound.play();
+    var sound = new Audio('..images/alarm.mp3');
+     sound.play();
     alert('Launch time approaching!');
 }
