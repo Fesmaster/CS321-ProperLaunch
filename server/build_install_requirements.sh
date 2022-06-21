@@ -10,6 +10,14 @@ cd ../..
 make -j8
 sudo make install
 
-sudo ln -s /usr/local/lib/libqlibc.so.2 /usr/lib/libqlibc.so.2
-sudo ln -s /usr/local/lib/libqlibcext.so.2 /usr/lib/libqlibcext.so.2
+cd ../..
+
+
+sudo cp ./lib/libasyncd/lib/qlibc/lib/libqlibc.so.2 /usr/lib/libqlibc.so.2
+sudo cp ./lib/libasyncd/lib/qlibc/lib/libqlibc.so /usr/lib/libqlibc.so
+sudo cp ./lib/libasyncd/lib/qlibc/lib/libqlibcext.so.2 /usr/lib/libqlibcext.so.2
+sudo cp ./lib/libasyncd/lib/qlibc/lib/libqlibcext.so /usr/lib/libqlibcext.so
 sudo ln -s /usr/local/lib/libasyncd.so.1 /usr/lib/libasyncd.so.1
+
+chmod +x update_database.sh
+chmod +x count_branches.sh

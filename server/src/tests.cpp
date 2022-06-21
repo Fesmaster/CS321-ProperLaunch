@@ -7,6 +7,10 @@
 #include "database.hpp"
 #include "parseutm.hpp"
 
+#ifndef T_BRANCH_COUNT
+#define T_BRANCH_COUNT -1
+#endif
+
 static std::unordered_set<std::string> s_FoundBranches;
 
 int run_tests(){
