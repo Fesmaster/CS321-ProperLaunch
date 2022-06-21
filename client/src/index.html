@@ -134,8 +134,12 @@
   <audio id="alarmId" src="./images/alarm.mp3" preload="auto"></audio>
   <script src="../render.js"></script>
   <script>
+    //change this blob here to make it point to whatever IP and URL you need. Add your own version if you need.
+    //let url = "127.0.0.1:8888"  //localhost
+    let url = "44.203.158.19:8888"  //?Hiwot's AWS server
+
     window.onload = function () {
-      renderGrid("http://44.203.158.19:8888/?sort=Name", false, "launches-container");
+      renderGrid("http://"+url+"/?sort=Name", false, "launches-container");
 
     }
     //var searchForm = document.getElementById("search-form");
@@ -147,7 +151,7 @@
       selectedFilter = selectedFilter.toUpperCase();
       // var xyz = "http://44.203.158.19:8888/?filter="+selectedFilter+"&range="+searchTerm;
       // var xyz = "http://44.203.158.19:8888/?filter=MAXINDEX&range=" + searchTerm;
-      renderGrid("http://44.203.158.19:8888/?filter=MAXINDEX&range=" + searchTerm, false, "launches-container");
+      renderGrid("http://"+url+"/?filter=MAXINDEX&range=" + searchTerm, false, "launches-container");
 
       //populateContainer();
       //window.location = `rendered.html?q=${searchValue}`;
@@ -155,23 +159,23 @@
 
     function filterBy(selectedFilter) {
       selectedFilter = selectedFilter.toUpperCase();
-      renderGrid("http://44.203.158.19:8888/?sort=" + selectedFilter, false, "launches-container");
+      renderGrid("http://"+url+"/?sort=" + selectedFilter, false, "launches-container");
 
     }
     function orderBy(order) {
       var selectedFilter = document.getElementById("filterBy").value;
       selectedFilter = selectedFilter.toUpperCase();
       if (order === "orderByAsc") {
-        renderGrid("http://44.203.158.19:8888/?sort=" + selectedFilter, true, "launches-container");
+        renderGrid("http://"+url+"/?sort=" + selectedFilter, true, "launches-container");
       }
       else {
-        renderGrid("http://44.203.158.19:8888/?sort=" + selectedFilter, false, "launches-container");
+        renderGrid("http://"+url+"/?sort=" + selectedFilter, false, "launches-container");
 
       }
     }
     function renderUpcomingLaunch() {
       var selectedFilter = document.getElementById("filterBy").value;
-      renderGrid("http://44.203.158.19:8888/?filter=MAXINDEX", false, "launches-container", true);
+      renderGrid("http://"+url+"/?filter=MAXINDEX", false, "launches-container", true);
 
       //renderGrid("http://44.203.158.19:8888/?sort=" + selectedFilter, false, "launches-container", true);
 
