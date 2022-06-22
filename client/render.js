@@ -24,7 +24,6 @@ function renderGrid(url, reverse, containerId, isForUpcoming) {
     jsonRawData = jsonRawData.slice(0, -1);
     data = jsonRawData.replace(/(^"|"$)/g, "'");
     data = JSON.parse(data);
-    console.log(jsonRawData);
     populateContainer(reverse, containerId, isForUpcoming);
 }
 
@@ -44,9 +43,6 @@ function populateContainer(reverse, containerId, isForUpcoming) {
         if (isForUpcoming && Date.parse(currentDate) > windowStart) {
          continue;
         }
-        const myJson = JSON.stringify(launchesData[launch]);
-
-        console.log(myJson);
 
         //if (myJson.toLowerCase().includes(getQuery().toLowerCase())) {
         var itemCard = document.createElement("div");
@@ -59,23 +55,31 @@ function populateContainer(reverse, containerId, isForUpcoming) {
 
         try {
             itemCard.innerHTML = `
-                <img src="${launchesData[launch]["image_url"]}" alt="delta" class="object-scale-down h-15 w-15">
-                <div class="m-4">
-                    <span class="font-bold">${launchesData[launch]["name"]} <footer></footer></span>
-                    <span class="block font-semibold  text-sm">Rocket Name: ${launchesData[launch]["rocket"]["name"] || "Undefined"}</span>
-                    <span class="block font-semibold  text-sm">Start Date: ${startDate || "Undefined"}</span>
-                    <span class="block font-semibold  text-sm">End Date: ${ endDate|| "Undefined"}</span>
-                    <span class="block font-semibold  text-sm">Agency Name: ${launchesData[launch]["provider"]["name"] || "Undefined"}</span>
-                    <span class="block font-semibold  text-sm">Launchpad Name: ${launchesData[launch]["pad"]["name"] || "Undefined"}</span>
-                    <span class="block font-semibold  text-sm">Location: ${launchesData[launch]["pad"]["location"]["name"] || "Undefined"}</span>
-                    <span class="block font-semibold  text-sm">Mission Title: ${launchesData[launch]["mission"]["name"] || "Undefined"}</span>
-
-                </div>    
+                <div class="flex flex-col">
+                    <img src="${launchesData[launch]["image_url"]}" alt="delta" class="object-scale-down h-15 w-15">
+                    <div class="m-4 text-xs text-center flex flex-col">
+                        <span>${launchesData[launch]["name"]}</span>
+                        <a class="underline text-blue-600" id="launchTitle${launch}" href="javascript:displayDetails('${launch}')">View Details</a>
+                    </div>
+                    <div id="launchDetail${launch}" class="hidden m-4">
+                        <span class="block font-semibold  text-sm">Rocket Name: ${launchesData[launch]["rocket"]["name"] || "Undefined"}</span>
+                        <span class="block font-semibold  text-sm">Start Date: ${startDate || "Undefined"}</span>
+                        <span class="block font-semibold  text-sm">End Date: ${ endDate|| "Undefined"}</span>
+                        <span class="block font-semibold  text-sm">Agency Name: ${launchesData[launch]["provider"]["name"] || "Undefined"}</span>
+                        <span class="block font-semibold  text-sm">Launchpad Name: ${launchesData[launch]["pad"]["name"] || "Undefined"}</span>
+                        <span class="block font-semibold  text-sm">Location: ${launchesData[launch]["pad"]["location"]["name"] || "Undefined"}</span>
+                        <span class="block font-semibold  text-sm">Mission Title: ${launchesData[launch]["mission"]["name"] || "Undefined"}</span>
+                    </div>
+                </div>
             `
         } catch (error) {
             itemCard.innerHTML = `
-                <img src="${launchesData[launch]["image"]}" alt="delta" class="object-scale-down h-15 w-15">
-                <div class="m-4">
+                <img src="${launchesData[launch]["image_url"]}" alt="delta" class="object-scale-down h-15 w-15">
+                <div class="m-4 text-xs text-center flex flex-col">
+                    <span>${launchesData[launch]["name"]}</span>
+                    <a class="underline text-blue-600" id="launchTitle${launch}" href="javascript:displayDetails('${launch}')">View Details</a>
+                </div>
+                <div id="launchDetail${launch}" class="m-4">
                     <span class="font-bold">${launchesData[launch]["name"]} <footer></footer></span>
                     <span class="block font-semibold text-sm">Rocket Name: ${launchesData[launch]["rocket"]["name"] || "Undefined"}</span>
                     <span class="block font-semibold  text-sm">Start Date: ${launchesData[launch]["status"]["window_start"] || "Undefined"}</span>
@@ -89,6 +93,18 @@ function populateContainer(reverse, containerId, isForUpcoming) {
             `
         }
         container.append(itemCard);
+    }
+}
+
+function displayDetails(id) {
+    if (document.getElementById('launchDetail' + id).classList.contains("hidden")) {
+        document.getElementById('launchDetail' + id).classList.remove("hidden")
+        document.getElementById('launchDetail' + id).classList.add("visible");
+        document.getElementById('launchTitle' + id).innerHTML="Hide Details"
+    } else {
+        document.getElementById('launchDetail' + id).classList.remove("visible");
+        document.getElementById('launchDetail' + id).classList.add("hidden");
+        document.getElementById('launchTitle' + id).innerHTML="View Details"
     }
 }
 
